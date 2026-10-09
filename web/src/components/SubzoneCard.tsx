@@ -27,13 +27,13 @@ interface Props {
 export default function SubzoneCard({ props, scored, showChange, onClose }: Props) {
   if (!props)
     return (
-      <Card title="Subzone details" className="h-full">
+      <Card title="Subzone details">
         <p className="text-sm text-ink-2">Click a subzone on the map, or a row in the inspection list, to see why it is ranked where it is.</p>
       </Card>
     )
   return (
     <Card
-      className="h-full"
+     
       title={titleCase(props.subzone)}
       action={<button onClick={onClose} className="rounded-md px-2 py-1 text-xs text-ink-2 hover:bg-accent-soft" aria-label="Close subzone details">✕ Close</button>}
     >

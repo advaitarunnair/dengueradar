@@ -18,7 +18,7 @@ export default function OutlookCard({ meta }: { meta: Meta }) {
   const share = meta.scoring.bands[meta.outlook].high * 100
   return (
     <Card title="4-week outlook (island-wide)">
-      <div className="grid gap-5 lg:grid-cols-[auto_1fr]">
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
           <Stat label="Forecast in 4 weeks" value={num(meta.forecast_cases)} sub={`cases per week · ${weekLabel(meta.forecast_week)}`} />
           <Stat label="Current" value={num(meta.current_cases)} sub={`cases per week · ${weekLabel(meta.case_week)}`} />
@@ -34,7 +34,7 @@ export default function OutlookCard({ meta }: { meta: Meta }) {
           </div>
         </div>
         <div className="border-line lg:border-l lg:pl-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Top drivers of this forecast</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Top drivers of this forecast (compared with a typical week)</p>
           <ul className="mt-1 space-y-1 text-sm text-ink">
             {meta.drivers.map((d) => (
               <li key={d.label} className="flex gap-2">

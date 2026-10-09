@@ -14,7 +14,7 @@ interface Props {
   onSelect: (id: string) => void
 }
 
-const FILL_OPACITY = { High: 0.6, Elevated: 0.5, Low: 0.18 }
+const FILL_OPACITY = { High: 0.6, Elevated: 0.5, Low: 0.22 }
 
 function styleFor(f: SubzoneFeature, scored: Map<string, ScoredSubzone>, selectedId: string | null): PathOptions {
   const s = scored.get(f.properties.subzone_id)
@@ -31,7 +31,7 @@ function FlyToSelected({ layerRef, selectedId, flyKey }: { layerRef: React.RefOb
     if (!selectedId || flyKey === 0) return
     layerRef.current?.eachLayer((l) => {
       const layer = l as Path & { feature?: SubzoneFeature; getBounds: () => LatLngBounds }
-      if (layer.feature?.properties.subzone_id === selectedId) map.flyToBounds(layer.getBounds(), { maxZoom: 15, padding: [60, 60], duration: 0.8 })
+      if (layer.feature?.properties.subzone_id === selectedId) map.flyToBounds(layer.getBounds(), { maxZoom: 14, padding: [40, 40], duration: 0.8 })
     })
     // fly only when a list row asks for it
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,8 +74,9 @@ export default function RiskMap({ scores, clusters, scored, selectedId, flyKey, 
     <div className="relative">
       <MapContainer bounds={[[1.22, 103.62], [1.47, 104.03]]} minZoom={10} maxZoom={17} scrollWheelZoom className="h-[420px] w-full rounded-lg sm:h-[520px]">
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          opacity={0.75}
         />
         <GeoJSON
           ref={layerRef}

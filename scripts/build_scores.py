@@ -116,7 +116,7 @@ def make_forecast(cfg: dict, cases: pd.DataFrame, daily: pd.DataFrame) -> dict:
         direction = "up" if value > 0 else "down"
         drivers.append({"label": label, "value": detail, "direction": direction,
                         "contribution": round(float(value), 4),
-                        "text": f"{label}{f' ({detail})' if detail else ''} pushes the forecast {direction}, compared with a typical week"})
+                        "text": f"{label}{f' ({detail})' if detail else ''} pushes the forecast {direction}"})
     case_year, case_week = date_to_epi_week(weekly.index[-1].date())
     target = weekly.index[-1] + pd.Timedelta(weeks=HORIZON)
     return {"case_week": epi_label(case_year, case_week), "target_week": epi_label(*date_to_epi_week(target.date())),

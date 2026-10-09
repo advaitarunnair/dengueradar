@@ -10,11 +10,11 @@ DengueRadar is a student hackathon prototype that helps Singapore's dengue inspe
 
 | Dashboard | Selected subzone |
 |---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Selected subzone](docs/screenshots/subzone.png) |
+| ![Dashboard](docs/screenshots/dashboard.jpg) | ![Selected subzone](docs/screenshots/subzone.jpg) |
 
 | Inspection list | Model page |
 |---|---|
-| ![Inspection list](docs/screenshots/inspection-list.png) | ![Model page](docs/screenshots/model.png) |
+| ![Inspection list](docs/screenshots/inspection-list.jpg) | ![Model page](docs/screenshots/model.jpg) |
 
 ## The problem
 
