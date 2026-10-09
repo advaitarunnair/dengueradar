@@ -2,7 +2,7 @@ name: Refresh data and deploy
 
 on:
   schedule:
-    - cron: "0 22 * * 0" # Monday 06:00 SGT
+    - cron: "0 22 * * *" # every day 06:00 SGT (clusters and weather change daily; snapshots stay one per epi week)
   workflow_dispatch:
   push:
     branches: [main]

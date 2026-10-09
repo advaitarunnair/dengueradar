@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useData } from '../lib/data'
 import { dateLabel, weekLabel } from '../lib/format'
 import type { Meta } from '../types'
+import RefreshButton from './RefreshButton'
 import { Disclaimer } from './ui'
 
 const link = ({ isActive }: { isActive: boolean }) =>
@@ -23,6 +24,7 @@ export default function Layout() {
                 Updated {dateLabel(meta.generated_at)} · {weekLabel(meta.epi_week)}
               </p>
             )}
+            <RefreshButton current={meta?.generated_at} />
             <nav className="flex gap-1" aria-label="Main">
               <NavLink to="/" end className={link}>Dashboard</NavLink>
               <NavLink to="/model" className={link}>Model</NavLink>

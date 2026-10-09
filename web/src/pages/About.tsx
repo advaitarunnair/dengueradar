@@ -2,6 +2,12 @@ import { Card, Disclaimer, Status } from '../components/ui'
 import { useData } from '../lib/data'
 import type { Meta } from '../types'
 
+const TEAM = [
+  { name: 'Advait', role: 'ML and Data Lead', did: 'forecast model, honest evaluation against baselines, and the automated data pipeline' },
+  { name: 'Weng Tin', role: 'Product and Frontend Lead', did: 'dashboard, map and the inspection-list workflow for officers' },
+  { name: 'Dillon', role: 'Public Health Research and Pitch Lead', did: 'problem research, the subzone risk index design, and the demo' },
+]
+
 export default function About() {
   const { data: meta, error, loading } = useData<Meta>('meta.json')
   if (error || !meta) return <Status loading={loading} error={error} />
@@ -48,8 +54,15 @@ priority = risk × (residents aged 65+ and under 15)`}</pre>
         <p className="mt-3 text-xs text-ink-2">Rainfall this week: {meta.weather.rain_stations_with_data} stations used. {meta.weather.rain_stations_skipped.length} skipped for missing more than {meta.weather.rain_max_missing_share * 100}% of the {meta.weather.rain_window_days}-day window{meta.weather.rain_stations_skipped.length > 0 ? ` (${meta.weather.rain_stations_skipped.map((s) => `${s.name === s.id ? s.id : `${s.name} ${s.id}`}: ${s.missing_days} days`).join('; ')})` : ''}; subzones near them use the next nearest station.</p>
         <p className="mt-2 text-xs text-ink-2">Population reference year: {meta.population_reference_year}. Weekly cases to {meta.case_data.bulletin_last_week} are from the MOH bulletin; later weeks are from NEA's published weekly counts. Datasets from data.gov.sg and SingStat are used under the <a className="text-accent underline" href="https://data.gov.sg/open-data-licence" target="_blank" rel="noreferrer">Singapore Open Data Licence</a>. Map tiles © OpenStreetMap contributors.</p>
       </Card>
-      <Card title="The team">
-        <p className="text-sm text-ink-2">Built by a student team for a machine learning hackathon. Team names and roles to be added.</p>
+      <Card title="The team: DefinitelyBillionaires">
+        <ul className="space-y-1.5 text-sm text-ink">
+          {TEAM.map((t) => (
+            <li key={t.name}><strong>{t.name}</strong> <span className="text-ink-2">· {t.role}: {t.did}</span></li>
+          ))}
+        </ul>
+      </Card>
+      <Card title="How the data stays current">
+        <p className="max-w-3xl text-sm leading-relaxed text-ink">A scheduled job rebuilds the clusters, weather, forecast and ranking every day at 06:00 SGT and republishes this site. The <strong>Refresh data</strong> button in the header loads the newest published run without reloading the page. It cannot start a new run itself: this site has no server, and starting a run needs a maintainer's GitHub access.</p>
       </Card>
       <Card title="Disclaimer">
         <Disclaimer />

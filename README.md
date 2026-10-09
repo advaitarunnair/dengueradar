@@ -101,9 +101,9 @@ Set `DATA_GOV_SG_API_KEY` to send an API key to data.gov.sg (optional; raises ra
 
 ## Weekly automation
 
-`.github/workflows/refresh-and-deploy.yml` runs every Monday 06:00 SGT (and on manual dispatch). The **refresh** job runs the tests and `build_scores.py`, then commits changed data as `github-actions[bot]` ("Weekly data refresh YYYY-WW"). The **deploy** job builds `web/` and publishes it to GitHub Pages. A push to `main` runs the deploy job only.
+`.github/workflows/refresh-and-deploy.yml` runs every day at 06:00 SGT (and on manual dispatch). The site's **Refresh data** button loads the newest published run without a page reload; it cannot start a run, because the site has no server. The **refresh** job runs the tests and `build_scores.py`, then commits changed data as `github-actions[bot]` ("Weekly data refresh YYYY-WW"). The **deploy** job builds `web/` and publishes it to GitHub Pages. A push to `main` runs the deploy job only.
 
-Daily station weather is cached in `data/cache/weather`, so each weekly run fetches only the 7 new days. Each run saves a snapshot to `data/history/YYYY-WW.json`, which the next run uses for week-on-week rank changes.
+Daily station weather is cached in `data/cache/weather`, so each run fetches only the new days. Each run saves a snapshot to `data/history/YYYY-WW.json`, which the next run uses for week-on-week rank changes.
 
 ## Limitations
 
@@ -115,10 +115,10 @@ Daily station weather is cached in `data/cache/weather`, so each weekly run fetc
 - Weekly cases from 2023 come from NEA's web page, which can be revised and differs slightly from the MOH bulletin (mean absolute difference of about 9 cases a week over 2022, where both exist).
 - Vector control interventions (for example Project Wolbachia) are not modelled.
 
-## Team
+## Team: DefinitelyBillionaires
 
-| Role | Name |
-|---|---|
-| Data and ML | _to be added_ |
-| Frontend | _to be added_ |
-| Domain research and presentation | _to be added_ |
+| Name | Role | Focus |
+|---|---|---|
+| Advait | ML and Data Lead | Forecast model, honest evaluation against baselines, automated data pipeline |
+| Weng Tin | Product and Frontend Lead | Dashboard, map and the inspection-list workflow for officers |
+| Dillon | Public Health Research and Pitch Lead | Problem research, subzone risk index design, demo |
