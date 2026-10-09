@@ -1,0 +1,63 @@
+# All dataset IDs and URLs below were discovered through the APIs and confirmed on 2026-10-09.
+datasets:
+  subzone_boundaries:
+    name: Master Plan 2019 Subzone Boundary (No Sea) (GEOJSON)
+    agency: Urban Redevelopment Authority
+    dataset_id: d_8594ae9ff96d0c708bc2af633048edfb
+    page: https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view
+  population:
+    name: Resident Population by Planning Area/Subzone of Residence, Age Group and Sex (General Household Survey 2025)
+    agency: Singapore Department of Statistics
+    table_id: C020123
+    api: https://tablebuilder.singstat.gov.sg/api/table/tabledata/C020123
+    page: https://tablebuilder.singstat.gov.sg/table/CT/C020123
+    reference_year: 2025
+  weekly_bulletin:
+    name: Weekly Infectious Disease Bulletin Cases
+    agency: Ministry of Health
+    dataset_id: d_ca168b2cb763640d72c4600a68f9909e
+    page: https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view
+    diseases: [Dengue Fever, Dengue Haemorrhagic Fever]
+  dengue_clusters:
+    name: Dengue Clusters (GEOJSON)
+    agency: National Environment Agency
+    dataset_id: d_dbfabf16158d1b0e1c420627c0819168
+    page: https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view
+  nea_weekly_cases:
+    name: NEA Dengue Cases page (weekly cases by E-week)
+    agency: National Environment Agency
+    page: https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases
+  mss_daily:
+    name: Historical Daily Records
+    agency: Meteorological Service Singapore
+    url_template: "http://www.weather.gov.sg/files/dailydata/DAILYDATA_{station}_{yyyymm}.csv"
+    page: http://www.weather.gov.sg/climate-historical-daily/
+    station: S24
+    station_name: Changi
+  realtime_weather:
+    name: Realtime Weather Readings across Singapore
+    agency: National Environment Agency
+    rainfall_v2: https://api-open.data.gov.sg/v2/real-time/api/rainfall
+    air_temperature_v2: https://api-open.data.gov.sg/v2/real-time/api/air-temperature
+    rainfall_v1: https://api.data.gov.sg/v1/environment/rainfall
+    air_temperature_v1: https://api.data.gov.sg/v1/environment/air-temperature
+    page: https://data.gov.sg/collections/1459/view
+
+crs_metric: "EPSG:3414"   # SVY21, used only for distances and simplification
+
+forecast:
+  horizon_weeks: 4
+  train_end_year: 2019      # target weeks up to and including this year are training
+  validation_weeks: 52
+  outlook_threshold: 0.15   # +/-15% vs current weekly cases
+
+scoring:
+  min_residents: 100
+  decay_km: 1.0
+  weights: {spread: 0.6, rain: 0.3, temp: 0.1}
+  rain_window_days: [56, 14]   # day -56 to day -14
+  temp_window_days: 28
+  bands:
+    Rising: {high: 0.20, elevated: 0.20}
+    Stable: {high: 0.10, elevated: 0.20}
+    Falling: {high: 0.10, elevated: 0.20}

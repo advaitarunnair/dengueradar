@@ -1,0 +1,42 @@
+[
+ {
+  "label": "Cases this week",
+  "importance": 0.5517
+ },
+ {
+  "label": "Average cases over the last 4 weeks",
+  "importance": 0.1471
+ },
+ {
+  "label": "Cases 1 week ago",
+  "importance": 0.1227
+ },
+ {
+  "label": "Time of year (seasonality)",
+  "importance": 0.0294
+ },
+ {
+  "label": "Trend in cases over the last 4 weeks",
+  "importance": 0.0262
+ },
+ {
+  "label": "Rainfall 2 weeks ago",
+  "importance": 0.0131
+ },
+ {
+  "label": "Mean temperature 2 to 8 weeks ago",
+  "importance": 0.0117
+ },
+ {
+  "label": "Mean temperature 2 weeks ago",
+  "importance": 0.0114
+ },
+ {
+  "label": "Cases 3 weeks ago",
+  "importance": 0.0101
+ },
+ {
+  "label": "Rainfall 8 weeks ago",
+  "importance": 0.008
+ }
+]

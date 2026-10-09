@@ -1,0 +1,263 @@
+{
+ "generated_at": "2026-10-09T17:16:08+08:00",
+ "horizon_weeks": 4,
+ "algorithm": "LightGBM gradient boosted trees",
+ "target": "log1p(weekly dengue cases) 4 weeks ahead",
+ "train": {
+  "first_target_week": "2012-W08",
+  "last_target_week": "2019-W52",
+  "n_weeks": 410,
+  "validation_weeks": 52
+ },
+ "test": {
+  "first_target_week": "2020-W01",
+  "last_target_week": "2026-W39",
+  "n_weeks": 353
+ },
+ "outbreak_threshold_cases": 308,
+ "case_sources": {
+  "moh_bulletin": [
+   "2012-W01",
+   "2022-W52"
+  ],
+  "nea_page": [
+   "2023-W01",
+   "2026-W39"
+  ]
+ },
+ "metrics": {
+  "all_test_weeks": {
+   "model": {
+    "n": 353,
+    "mae": 115.19692219450297,
+    "mape": 37.24081316097851,
+    "direction_accuracy": 0.5868945868945868
+   },
+   "persistence": {
+    "n": 353,
+    "mae": 87.45609065155807,
+    "mape": 29.280011521267426,
+    "direction_accuracy": null
+   },
+   "seasonal": {
+    "n": 353,
+    "mae": 335.75637393767704,
+    "mape": 219.8250322940689,
+    "direction_accuracy": 0.5128205128205128
+   }
+  },
+  "outbreak_weeks": {
+   "model": {
+    "n": 104,
+    "mae": 292.893230063039,
+    "mape": 33.269143597426506,
+    "direction_accuracy": 0.7281553398058253
+   },
+   "persistence": {
+    "n": 104,
+    "mae": 211.70192307692307,
+    "mape": 30.00760463444908,
+    "direction_accuracy": null
+   },
+   "seasonal": {
+    "n": 104,
+    "mae": 472.4807692307692,
+    "mape": 65.16936572595196,
+    "direction_accuracy": 0.5339805825242718
+   }
+  }
+ },
+ "tuning": {
+  "selected": {
+   "target_mode": "level",
+   "num_leaves": 8,
+   "min_data_in_leaf": 20,
+   "best_iteration": 645,
+   "val_mae": 75.13497874041181
+  },
+  "candidates": [
+   {
+    "target_mode": "level",
+    "num_leaves": 4,
+    "min_data_in_leaf": 10,
+    "best_iteration": 688,
+    "val_mae": 79.20749750639659
+   },
+   {
+    "target_mode": "level",
+    "num_leaves": 4,
+    "min_data_in_leaf": 20,
+    "best_iteration": 713,
+    "val_mae": 79.90646944406068
+   },
+   {
+    "target_mode": "level",
+    "num_leaves": 8,
+    "min_data_in_leaf": 10,
+    "best_iteration": 584,
+    "val_mae": 76.94943415164607
+   },
+   {
+    "target_mode": "level",
+    "num_leaves": 8,
+    "min_data_in_leaf": 20,
+    "best_iteration": 645,
+    "val_mae": 75.13497874041181
+   },
+   {
+    "target_mode": "level",
+    "num_leaves": 15,
+    "min_data_in_leaf": 10,
+    "best_iteration": 428,
+    "val_mae": 78.94671056676346
+   },
+   {
+    "target_mode": "level",
+    "num_leaves": 15,
+    "min_data_in_leaf": 20,
+    "best_iteration": 525,
+    "val_mae": 75.72554126427512
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 4,
+    "min_data_in_leaf": 10,
+    "best_iteration": 532,
+    "val_mae": 83.45952653124063
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 4,
+    "min_data_in_leaf": 20,
+    "best_iteration": 300,
+    "val_mae": 82.72037422474764
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 8,
+    "min_data_in_leaf": 10,
+    "best_iteration": 539,
+    "val_mae": 82.8092555129628
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 8,
+    "min_data_in_leaf": 20,
+    "best_iteration": 603,
+    "val_mae": 79.4390099477283
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 15,
+    "min_data_in_leaf": 10,
+    "best_iteration": 488,
+    "val_mae": 84.19402175937256
+   },
+   {
+    "target_mode": "delta",
+    "num_leaves": 15,
+    "min_data_in_leaf": 20,
+    "best_iteration": 296,
+    "val_mae": 79.23593257699761
+   }
+  ]
+ },
+ "features": [
+  {
+   "name": "logcases_lag0",
+   "label": "Cases this week"
+  },
+  {
+   "name": "logcases_lag1",
+   "label": "Cases 1 week ago"
+  },
+  {
+   "name": "logcases_lag2",
+   "label": "Cases 2 weeks ago"
+  },
+  {
+   "name": "logcases_lag3",
+   "label": "Cases 3 weeks ago"
+  },
+  {
+   "name": "logcases_mean4",
+   "label": "Average cases over the last 4 weeks"
+  },
+  {
+   "name": "logcases_slope4",
+   "label": "Trend in cases over the last 4 weeks"
+  },
+  {
+   "name": "rain_lag2",
+   "label": "Rainfall 2 weeks ago"
+  },
+  {
+   "name": "rain_lag3",
+   "label": "Rainfall 3 weeks ago"
+  },
+  {
+   "name": "rain_lag4",
+   "label": "Rainfall 4 weeks ago"
+  },
+  {
+   "name": "rain_lag5",
+   "label": "Rainfall 5 weeks ago"
+  },
+  {
+   "name": "rain_lag6",
+   "label": "Rainfall 6 weeks ago"
+  },
+  {
+   "name": "rain_lag7",
+   "label": "Rainfall 7 weeks ago"
+  },
+  {
+   "name": "rain_lag8",
+   "label": "Rainfall 8 weeks ago"
+  },
+  {
+   "name": "temp_lag2",
+   "label": "Mean temperature 2 weeks ago"
+  },
+  {
+   "name": "temp_lag3",
+   "label": "Mean temperature 3 weeks ago"
+  },
+  {
+   "name": "temp_lag4",
+   "label": "Mean temperature 4 weeks ago"
+  },
+  {
+   "name": "temp_lag5",
+   "label": "Mean temperature 5 weeks ago"
+  },
+  {
+   "name": "temp_lag6",
+   "label": "Mean temperature 6 weeks ago"
+  },
+  {
+   "name": "temp_lag7",
+   "label": "Mean temperature 7 weeks ago"
+  },
+  {
+   "name": "temp_lag8",
+   "label": "Mean temperature 8 weeks ago"
+  },
+  {
+   "name": "rain_sum_2_8",
+   "label": "Total rainfall 2 to 8 weeks ago"
+  },
+  {
+   "name": "temp_mean_2_8",
+   "label": "Mean temperature 2 to 8 weeks ago"
+  },
+  {
+   "name": "week_sin",
+   "label": "Time of year (seasonality)"
+  },
+  {
+   "name": "week_cos",
+   "label": "Time of year (seasonality)"
+  }
+ ]
+}
