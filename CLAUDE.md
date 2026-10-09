@@ -40,3 +40,7 @@ scikit-learn's bundled `sklearn/.dylibs/libomp.dylib` next to `lightgbm/lib/lib_
   Cases page, saved in `data/recent_cases.csv` (source `nea_page`; rows with source `manual` are hand-entered).
 - MSS monthly files lag by a month or two; recent Changi weather comes from the real-time API (station S24).
 - Population: SingStat Table Builder C020123 (General Household Survey 2025), all 332 subzones match.
+- Clusters: primary source is the JSON feed behind NEA's cluster map (`/api/OneMap/GetMapData/DENGUE_CLUSTER`, has polygons and
+  is current). The data.gov.sg Dengue Clusters file lags it by about a week and is the fallback only; `meta.clusters` records
+  which was used and the source's own update time. Geometry is never constructed.
+- Rainfall stations missing more than 10% of the rain window are skipped and listed in `meta.weather.rain_stations_skipped`.

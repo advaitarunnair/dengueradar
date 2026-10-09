@@ -19,7 +19,7 @@ export default function About() {
           <p>Each of the {meta.scoring.eligible_subzones} URA subzones with at least {meta.scoring.min_residents} residents gets three scores, each turned into a 0 to 1 percentile across subzones:</p>
           <ul className="list-disc space-y-1 pl-5">
             <li><strong>Spread</strong>: for every active cluster, its case count × e<sup>−distance in km</sup>, added up. Distance is from the subzone centre to the cluster boundary.</li>
-            <li><strong>Rain</strong>: total rainfall from 8 weeks to 2 weeks ago at the nearest weather station with data.</li>
+            <li><strong>Rain</strong>: total rainfall from 8 weeks to 2 weeks ago at the nearest weather station that is missing no more than {meta.weather.rain_max_missing_share * 100}% of those days.</li>
             <li><strong>Temp</strong>: mean air temperature over the last 4 weeks at the nearest station with data.</li>
           </ul>
           <pre className="overflow-x-auto rounded-md border border-line bg-page p-3 text-xs">{`risk     = ${w.spread} × spread + ${w.rain} × rain + ${w.temp} × temp
@@ -45,7 +45,8 @@ priority = risk × (residents aged 65+ and under 15)`}</pre>
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-ink-2">Population reference year: {meta.population_reference_year}. Weekly cases to {meta.case_data.bulletin_last_week} are from the MOH bulletin; later weeks are from NEA's published weekly counts. Datasets from data.gov.sg and SingStat are used under the <a className="text-accent underline" href="https://data.gov.sg/open-data-licence" target="_blank" rel="noreferrer">Singapore Open Data Licence</a>. Map tiles © OpenStreetMap contributors.</p>
+        <p className="mt-3 text-xs text-ink-2">Rainfall this week: {meta.weather.rain_stations_with_data} stations used. {meta.weather.rain_stations_skipped.length} skipped for missing more than {meta.weather.rain_max_missing_share * 100}% of the {meta.weather.rain_window_days}-day window{meta.weather.rain_stations_skipped.length > 0 ? ` (${meta.weather.rain_stations_skipped.map((s) => `${s.name === s.id ? s.id : `${s.name} ${s.id}`}: ${s.missing_days} days`).join('; ')})` : ''}; subzones near them use the next nearest station.</p>
+        <p className="mt-2 text-xs text-ink-2">Population reference year: {meta.population_reference_year}. Weekly cases to {meta.case_data.bulletin_last_week} are from the MOH bulletin; later weeks are from NEA's published weekly counts. Datasets from data.gov.sg and SingStat are used under the <a className="text-accent underline" href="https://data.gov.sg/open-data-licence" target="_blank" rel="noreferrer">Singapore Open Data Licence</a>. Map tiles © OpenStreetMap contributors.</p>
       </Card>
       <Card title="The team">
         <p className="text-sm text-ink-2">Built by a student team for a machine learning hackathon. Team names and roles to be added.</p>

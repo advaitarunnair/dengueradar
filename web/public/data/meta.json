@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-09T18:15:59+08:00",
+ "generated_at": "2026-10-09T18:26:41+08:00",
  "epi_week": "2026-W40",
  "current_cases": 71,
  "case_week": "2026-W39",
@@ -10,30 +10,37 @@
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "71 cases",
+   "value": "71",
    "direction": "down",
    "contribution": -0.5302,
-   "text": "Cases this week (71 cases) pushes the forecast down"
+   "text": "Cases this week (71) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Cases 1 week ago",
-   "value": "82 cases",
+   "value": "82",
    "direction": "down",
    "contribution": -0.1243,
-   "text": "Cases 1 week ago (82 cases) pushes the forecast down"
+   "text": "Cases 1 week ago (82) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Rainfall 7 weeks ago",
    "value": "0 mm",
    "direction": "up",
    "contribution": 0.0703,
-   "text": "Rainfall 7 weeks ago (0 mm) pushes the forecast up"
+   "text": "Rainfall 7 weeks ago (0 mm) is below typical levels, pushing the forecast up"
   }
  ],
  "outlook_threshold_pct": 15.0,
  "active_clusters": 8,
- "cluster_cases": 124,
- "clusters_updated_at": "2026-10-09T10:06:43+08:00",
+ "cluster_cases": 126,
+ "clusters": {
+  "source": "nea_map",
+  "source_name": "NEA Dengue Clusters map feed",
+  "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
+  "updated_at": "2026-10-09T00:01:39+08:00",
+  "fallback_used": false,
+  "note": null
+ },
  "population_reference_year": 2025,
  "case_data": {
   "last_week": "2026-W39",
@@ -44,7 +51,87 @@
  },
  "weather": {
   "window_end": "2026-10-08",
-  "rain_stations_with_data": 88,
+  "rain_stations_with_data": 75,
+  "rain_max_missing_share": 0.1,
+  "rain_window_days": 43,
+  "rain_stations_skipped": [
+   {
+    "id": "S100",
+    "name": "Woodlands Road",
+    "missing_days": 6
+   },
+   {
+    "id": "S114",
+    "name": "Choa Chu Kang Avenue 4",
+    "missing_days": 6
+   },
+   {
+    "id": "S121",
+    "name": "Old Choa Chu Kang Road",
+    "missing_days": 6
+   },
+   {
+    "id": "S203",
+    "name": "Pasir Panjang",
+    "missing_days": 30
+   },
+   {
+    "id": "S224",
+    "name": "Airport Boulevard",
+    "missing_days": 8
+   },
+   {
+    "id": "S300",
+    "name": "S300",
+    "missing_days": 6
+   },
+   {
+    "id": "S301",
+    "name": "S301",
+    "missing_days": 6
+   },
+   {
+    "id": "S302",
+    "name": "S302",
+    "missing_days": 6
+   },
+   {
+    "id": "S303",
+    "name": "S303",
+    "missing_days": 8
+   },
+   {
+    "id": "S305",
+    "name": "S305",
+    "missing_days": 8
+   },
+   {
+    "id": "S306",
+    "name": "S306",
+    "missing_days": 6
+   },
+   {
+    "id": "S307",
+    "name": "S307",
+    "missing_days": 6
+   },
+   {
+    "id": "S308",
+    "name": "S308",
+    "missing_days": 6
+   },
+   {
+    "id": "S80",
+    "name": "S80",
+    "missing_days": 6
+   },
+   {
+    "id": "S900",
+    "name": "Seletar Aerospace View",
+    "missing_days": 23
+   }
+  ],
+  "rain_stations_no_data": 0,
   "temp_stations_with_data": 18,
   "changi_source": "MSS daily records to 31 Aug 2026, then real-time station S24",
   "forecast_weather_features_missing": 0
@@ -77,7 +164,13 @@
  "previous_week": null,
  "sources": [
   {
-   "name": "Dengue Clusters (GEOJSON)",
+   "name": "NEA Dengue Clusters map feed",
+   "agency": "National Environment Agency",
+   "url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
+   "licence": "NEA website terms of use"
+  },
+  {
+   "name": "Dengue Clusters (GEOJSON) (fallback)",
    "agency": "National Environment Agency",
    "url": "https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view",
    "licence": "Singapore Open Data Licence"

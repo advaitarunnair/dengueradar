@@ -14,6 +14,7 @@ import pandas as pd
 
 import realtime_weather
 from common import (DATA, RAW, WEB_DATA, date_to_epi_week, dgs_metadata, dgs_poll_download, epi_label,
+                    epi_week_start, http_get,
                     load_config, load_weekly_cases, mss_download_month, mss_read_daily, now_sgt,
                     update_recent_cases)
 from train_model import HORIZON, MODEL_PATH, build_features, build_weekly, feature_label, predict_cases
@@ -24,23 +25,67 @@ COMPONENTS = ("spread", "rain", "temp")
 
 # ---- inputs ----------------------------------------------------------------
 
-def load_clusters(cfg: dict) -> gpd.GeoDataFrame:
-    """Current active dengue clusters (polygon, locality, case count)."""
+def _clusters_from_nea(cfg: dict) -> gpd.GeoDataFrame:
+    """Clusters from the JSON feed behind NEA's own cluster map (polygons, locality, case count)."""
+    from shapely.geometry import shape
+
+    ds = cfg["datasets"]["nea_cluster_map"]
+    body = http_get(ds["api"], timeout=60).json()
+    if isinstance(body, str):  # the endpoint returns JSON encoded as a JSON string
+        body = json.loads(body)
+    header, items = body["SrchResults"][0], body["SrchResults"][1:]
+    if "ErrorMessage" in header or int(header["FeatCount"]) != len(items):
+        raise RuntimeError(f"unexpected NEA cluster feed header: {header}")
+    (RAW / "nea_dengue_clusters.json").write_text(json.dumps(body))
+    gdf = gpd.GeoDataFrame({"locality": [c["DESCRIPTION"].strip() for c in items],
+                            "cases": [int(c["CASE_SIZE"]) for c in items]},
+                           geometry=[shape(c["GeoJSON"]["geometry"]) for c in items], crs=4326)
+    if not (gdf.geometry.geom_type.isin(["Polygon", "MultiPolygon"]).all() and gdf.geometry.is_valid.all()):
+        raise RuntimeError("NEA cluster feed contains invalid or non-polygon geometry")
+    updated = pd.Timestamp(header["DateTime"]).tz_convert("Asia/Singapore").isoformat(timespec="seconds")
+    gdf.attrs = {"source": "nea_map", "source_name": ds["name"], "source_url": ds["page"],
+                 "updated_at": updated, "fallback_used": False, "note": None}
+    return gdf
+
+
+def _clusters_from_datagov(cfg: dict, why: str) -> gpd.GeoDataFrame:
+    """Fallback: the data.gov.sg file, which can lag NEA's page by about a week."""
     ds = cfg["datasets"]["dengue_clusters"]
     raw = dgs_poll_download(ds["dataset_id"])
     (RAW / "dengue_clusters.geojson").write_bytes(raw)
     gdf = gpd.read_file(RAW / "dengue_clusters.geojson")
     if len(gdf) and "CASE_SIZE" not in gdf.columns:  # older exports keep attributes in an HTML table
         props = gdf["Description"].map(lambda h: dict(re.findall(r"<th>(.*?)</th>\s*<td>(.*?)</td>", h or "")))
-        gdf["LOCALITY"] = props.map(lambda p: p.get("LOCALITY"))
-        gdf["CASE_SIZE"] = props.map(lambda p: p.get("CASE_SIZE"))
-    out = gpd.GeoDataFrame({"locality": gdf.get("LOCALITY", pd.Series(dtype=str)),
+        for col in ("LOCALITY", "CASE_SIZE", "FMEL_UPD_D"):
+            gdf[col] = props.map(lambda p: p.get(col))
+    out = gpd.GeoDataFrame({"locality": gdf.get("LOCALITY", pd.Series(dtype=str)).str.strip(),
                             "cases": pd.to_numeric(gdf.get("CASE_SIZE", pd.Series(dtype=float)), errors="coerce")},
                            geometry=gdf.geometry.force_2d() if len(gdf) else [], crs=4326)
     out = out[out["cases"].notna() & ~out.geometry.is_empty].reset_index(drop=True)
     out["cases"] = out["cases"].astype(int)
-    out.attrs["last_updated"] = dgs_metadata(ds["dataset_id"]).get("lastUpdatedAt")
+    # The dataset's own dates, not our fetch time: newest per-cluster edit, else the dataset metadata.
+    stamps = pd.to_datetime(gdf.get("FMEL_UPD_D", pd.Series(dtype=str)), format="%Y%m%d%H%M%S", errors="coerce").dropna()
+    updated = (stamps.max().tz_localize("Asia/Singapore").isoformat(timespec="seconds") if len(stamps)
+               else dgs_metadata(ds["dataset_id"]).get("lastUpdatedAt"))
+    out.attrs = {"source": "data_gov_sg", "source_name": ds["name"], "source_url": ds["page"],
+                 "updated_at": updated, "fallback_used": True,
+                 "note": f"NEA's cluster map feed could not be read ({why}), so clusters come from the data.gov.sg "
+                         "file, which can lag NEA's page by about a week. Some listed clusters may have closed and "
+                         "newer ones may be missing. Check NEA's cluster page before acting."}
     return out
+
+
+def load_clusters(cfg: dict) -> gpd.GeoDataFrame:
+    """Current active dengue clusters (polygon, locality, case count).
+
+    NEA's own map feed first, because it is current. If it fails, fall back to the data.gov.sg file and
+    say so on the site. Geometry is always taken from a source, never constructed.
+    """
+    try:
+        return _clusters_from_nea(cfg)
+    except Exception as e:  # noqa: BLE001 - any failure means use the official open-data file instead
+        print(f"WARNING: NEA cluster map feed failed ({e}); falling back to data.gov.sg")
+        return _clusters_from_datagov(cfg, type(e).__name__)
 
 
 def load_subzones(cfg: dict) -> gpd.GeoDataFrame:
@@ -77,17 +122,31 @@ def outlook_label(pct_change: float, threshold: float) -> str:
     return "Stable"
 
 
-def describe_feature(name: str, row: pd.Series) -> str:
-    v = row[name]
+def describe_feature(name: str, value: float) -> str:
     if name.startswith("logcases_lag") or name == "logcases_mean4":
-        return f"{math.expm1(v):,.0f} cases"
+        return f"{math.expm1(value):,.0f}"
     if name == "logcases_slope4":
-        return f"{(math.exp(v) - 1) * 100:+.0f}% per week"
+        return f"{(math.exp(value) - 1) * 100:+.0f}% per week"
     if name.startswith("rain"):
-        return f"{v:,.0f} mm"
+        return f"{value:,.0f} mm"
     if name.startswith("temp"):
-        return f"{v:.1f} °C"
+        return f"{value:.1f} °C"
     return ""
+
+
+def driver_text(label: str, name: str, value: float, typical: float, contribution: float) -> str:
+    """Plain-English driver: where the value sits against its typical (training median) level, and
+    which way that moves the forecast relative to the model's average prediction."""
+    effect = "pushing the forecast up" if contribution > 0 else "pulling the forecast down"
+    if label.startswith("Time of year"):
+        return f"The time of year is {effect}"
+    if name == "logcases_slope4":
+        level = "rising faster than usual" if value > typical + 0.01 else "falling faster than usual" if value < typical - 0.01 else "close to its usual pace"
+        return f"{label} ({describe_feature(name, value)}) is {level}, {effect}"
+    tol = 0.05 * abs(typical) if not name.startswith("logcases") else 0.05
+    level = "above typical levels" if value > typical + tol else "below typical levels" if value < typical - tol else "close to typical levels"
+    verb = "are" if label.startswith("Cases") else "is"
+    return f"{label} ({describe_feature(name, value)}) {verb} {level}, {effect}"
 
 
 def make_forecast(cfg: dict, cases: pd.DataFrame, daily: pd.DataFrame) -> dict:
@@ -109,14 +168,16 @@ def make_forecast(cfg: dict, cases: pd.DataFrame, daily: pd.DataFrame) -> dict:
     c["label"] = c["name"].map(feature_label)
     grouped = c.groupby("label")["contribution"].sum()
     top = grouped.reindex(grouped.abs().sort_values(ascending=False).index).head(3)
+    # "Typical" = median of each feature over the training period (target weeks up to train_end_year).
+    train_end = pd.Timestamp(epi_week_start(cfg["forecast"]["train_end_year"] + 1, 1)) - pd.Timedelta(weeks=HORIZON)
+    typical = feats[feats.index < train_end].median()
     drivers = []
     for label, value in top.items():
         lead = c[c["label"] == label].sort_values("contribution", key=abs, ascending=False)["name"].iloc[0]
-        detail = "" if label.startswith("Time of year") else describe_feature(lead, row.iloc[0])
-        direction = "up" if value > 0 else "down"
-        drivers.append({"label": label, "value": detail, "direction": direction,
-                        "contribution": round(float(value), 4),
-                        "text": f"{label}{f' ({detail})' if detail else ''} pushes the forecast {direction}"})
+        v = float(row[lead].iloc[0])
+        drivers.append({"label": label, "value": "" if label.startswith("Time of year") else describe_feature(lead, v),
+                        "direction": "up" if value > 0 else "down", "contribution": round(float(value), 4),
+                        "text": driver_text(label, lead, v, float(typical[lead]), float(value))})
     case_year, case_week = date_to_epi_week(weekly.index[-1].date())
     target = weekly.index[-1] + pd.Timedelta(weeks=HORIZON)
     return {"case_week": epi_label(case_year, case_week), "target_week": epi_label(*date_to_epi_week(target.date())),
@@ -145,7 +206,11 @@ def spread_components(subzones: gpd.GeoDataFrame, clusters: gpd.GeoDataFrame, cf
 
 def station_values(daily: pd.DataFrame, stations: dict, end: dt.date, cfg: dict) -> pd.DataFrame:
     """Per station: rainfall total over day -56..-14 and mean temperature over the last 28 days.
-    A station needs data on at least 80% of the days in a window, otherwise it has no value."""
+
+    Rainfall: a station missing more than `rain_max_missing_share` (10%) of the window's days is skipped,
+    so subzones use the next nearest station with enough coverage. For a station missing a few days the
+    total is its daily mean times the window length. Temperature needs data on at least 80% of days.
+    """
     far, near = cfg["scoring"]["rain_window_days"]
     end = pd.Timestamp(end)
     rain_days = pd.date_range(end - pd.Timedelta(days=far - 1), end - pd.Timedelta(days=near - 1))
@@ -153,7 +218,10 @@ def station_values(daily: pd.DataFrame, stations: dict, end: dt.date, cfg: dict)
     r = daily[daily["date"].isin(rain_days)].groupby("station")["rain_mm"].agg(["mean", "count"])
     t = daily[daily["date"].isin(temp_days)].groupby("station")["temp_c"].agg(["mean", "count"])
     out = pd.DataFrame(index=sorted(stations))
-    out["rain_mm"] = (r["mean"] * len(rain_days)).where(r["count"] >= 0.8 * len(rain_days))
+    out["rain_missing_days"] = (len(rain_days) - r["count"].reindex(out.index).fillna(0)).astype(int)
+    out["rain_window_days"] = len(rain_days)
+    max_missing = cfg["scoring"]["rain_max_missing_share"] * len(rain_days)
+    out["rain_mm"] = (r["mean"].reindex(out.index) * len(rain_days)).where(out["rain_missing_days"] <= max_missing)
     out["temp_c"] = t["mean"].where(t["count"] >= 0.8 * len(temp_days))
     pts = gpd.GeoSeries(gpd.points_from_xy([stations[s]["lon"] for s in out.index],
                                            [stations[s]["lat"] for s in out.index]), crs=4326).to_crs(cfg["crs_metric"])
@@ -285,7 +353,8 @@ def sources(cfg: dict) -> list[dict]:
     licence = "Singapore Open Data Licence"
     d = cfg["datasets"]
     return [
-        {"name": d["dengue_clusters"]["name"], "agency": d["dengue_clusters"]["agency"], "url": d["dengue_clusters"]["page"], "licence": licence},
+        {"name": d["nea_cluster_map"]["name"], "agency": d["nea_cluster_map"]["agency"], "url": d["nea_cluster_map"]["page"], "licence": "NEA website terms of use"},
+        {"name": d["dengue_clusters"]["name"] + " (fallback)", "agency": d["dengue_clusters"]["agency"], "url": d["dengue_clusters"]["page"], "licence": licence},
         {"name": d["weekly_bulletin"]["name"], "agency": d["weekly_bulletin"]["agency"], "url": d["weekly_bulletin"]["page"], "licence": licence},
         {"name": d["nea_weekly_cases"]["name"], "agency": d["nea_weekly_cases"]["agency"], "url": d["nea_weekly_cases"]["page"], "licence": "NEA website terms of use"},
         {"name": d["realtime_weather"]["name"], "agency": d["realtime_weather"]["agency"], "url": d["realtime_weather"]["page"], "licence": licence},
@@ -303,7 +372,7 @@ def main() -> None:
     print(f"DengueRadar weekly build for {week} ({now:%Y-%m-%d %H:%M} SGT)")
 
     clusters = load_clusters(cfg)
-    print(f"Active clusters: {len(clusters)} ({clusters['cases'].sum()} cases)")
+    print(f"Active clusters: {len(clusters)} ({clusters['cases'].sum()} cases) from {clusters.attrs['source']}, updated {clusters.attrs['updated_at']}")
     if clusters.empty:
         print("WARNING: no active clusters in the dataset; the spread component is zero everywhere.")
 
@@ -343,11 +412,16 @@ def main() -> None:
         "pct_change": forecast["pct_change"], "outlook": forecast["outlook"], "drivers": forecast["drivers"],
         "outlook_threshold_pct": cfg["forecast"]["outlook_threshold"] * 100,
         "active_clusters": int(len(clusters)), "cluster_cases": int(clusters["cases"].sum()),
-        "clusters_updated_at": clusters.attrs.get("last_updated"),
+        "clusters": {k: clusters.attrs[k] for k in ("source", "source_name", "source_url", "updated_at", "fallback_used", "note")},
         "population_reference_year": cfg["datasets"]["population"]["reference_year"],
         "case_data": {"last_week": forecast["case_week"], "bulletin_last_week": cases[cases["source"] == "moh_bulletin"]["epi_week"].iloc[-1],
                       "recent_source": str(cases["source"].iloc[-1]), "nea_fetch_ok": nea_ok, "manual_topup_used": manual_used},
         "weather": {"window_end": weather_end.isoformat(), "rain_stations_with_data": int(st["rain_mm"].notna().sum()),
+                    "rain_max_missing_share": cfg["scoring"]["rain_max_missing_share"],
+                    "rain_window_days": int(st["rain_window_days"].iloc[0]),
+                    "rain_stations_skipped": [{"id": sid, "name": r["name"], "missing_days": int(r["rain_missing_days"])}
+                                              for sid, r in st[st["rain_mm"].isna() & (st["rain_missing_days"] < st["rain_window_days"])].iterrows()],
+                    "rain_stations_no_data": int((st["rain_missing_days"] == st["rain_window_days"]).sum()),
                     "temp_stations_with_data": int(st["temp_c"].notna().sum()), "changi_source": changi_source,
                     "forecast_weather_features_missing": forecast["weather_features_missing"]},
         "scoring": {"weights": cfg["scoring"]["weights"], "bands": cfg["scoring"]["bands"],

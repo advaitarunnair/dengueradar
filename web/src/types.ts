@@ -73,7 +73,15 @@ export interface Meta {
   outlook_threshold_pct: number
   active_clusters: number
   cluster_cases: number
-  clusters_updated_at: string | null
+  clusters: {
+    source: 'nea_map' | 'data_gov_sg'
+    source_name: string
+    source_url: string
+    /** The source's own last-updated time, not when we fetched it. */
+    updated_at: string | null
+    fallback_used: boolean
+    note: string | null
+  }
   population_reference_year: number
   case_data: {
     last_week: string
@@ -85,6 +93,10 @@ export interface Meta {
   weather: {
     window_end: string
     rain_stations_with_data: number
+    rain_max_missing_share: number
+    rain_window_days: number
+    rain_stations_skipped: { id: string; name: string; missing_days: number }[]
+    rain_stations_no_data: number
     temp_stations_with_data: number
     changi_source: string
     forecast_weather_features_missing: number

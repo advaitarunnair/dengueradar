@@ -6,6 +6,7 @@ import SubzoneCard from '../components/SubzoneCard'
 import { Card, Status } from '../components/ui'
 import WeightSliders from '../components/WeightSliders'
 import { useData } from '../lib/data'
+import { dateLabel } from '../lib/format'
 import { rescore, sameWeights } from '../lib/scoring'
 import type { ClustersCollection, Meta, ScoresCollection, Weights } from '../types'
 
@@ -40,7 +41,14 @@ export default function Dashboard() {
       <div className="no-print"><OutlookCard meta={m} /></div>
       <div id="map-top" className="no-print grid scroll-mt-4 gap-5 lg:grid-cols-[1fr_340px]">
         <Card title="Subzone risk map" action={<p className="text-xs text-ink-2">{counts.High} High · {counts.Elevated} Elevated · {counts.Low} Low · {m.active_clusters} active clusters ({m.cluster_cases} cases)</p>}>
+          {m.clusters.fallback_used && m.clusters.note && (
+            <p role="note" className="mb-3 rounded-md border border-line bg-accent-soft px-3 py-2 text-xs text-ink">⚠ {m.clusters.note}</p>
+          )}
           <RiskMap scores={scores.data} clusters={clusters.data} scored={scored} selectedId={selectedId} flyKey={flyKey} onSelect={setSelectedId} />
+          <p className="mt-2 text-xs text-ink-2">
+            Clusters: <a href={m.clusters.source_url} target="_blank" rel="noreferrer" className="text-accent underline">{m.clusters.source_name}</a>
+            {m.clusters.updated_at ? `, last updated by the source on ${dateLabel(m.clusters.updated_at)}` : ', source update date not available'}.
+          </p>
         </Card>
         <div className="space-y-5">
           <SubzoneCard props={selected} scored={selectedId ? scored.get(selectedId) : undefined} showChange={!customWeights} onClose={() => setSelectedId(null)} />

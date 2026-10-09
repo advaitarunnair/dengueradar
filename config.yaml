@@ -23,6 +23,11 @@ datasets:
     agency: National Environment Agency
     dataset_id: d_dbfabf16158d1b0e1c420627c0819168
     page: https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view
+  nea_cluster_map:
+    name: NEA Dengue Clusters map feed
+    agency: National Environment Agency
+    api: https://www.nea.gov.sg/api/OneMap/GetMapData/DENGUE_CLUSTER
+    page: https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters
   nea_weekly_cases:
     name: NEA Dengue Cases page (weekly cases by E-week)
     agency: National Environment Agency
@@ -56,6 +61,7 @@ scoring:
   decay_km: 1.0
   weights: {spread: 0.6, rain: 0.3, temp: 0.1}
   rain_window_days: [56, 14]   # day -56 to day -14
+  rain_max_missing_share: 0.10 # stations missing more of the rain window than this are skipped
   temp_window_days: 28
   bands:
     Rising: {high: 0.20, elevated: 0.20}

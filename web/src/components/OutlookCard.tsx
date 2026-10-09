@@ -34,7 +34,7 @@ export default function OutlookCard({ meta }: { meta: Meta }) {
           </div>
         </div>
         <div className="border-line lg:border-l lg:pl-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Top drivers of this forecast (compared with a typical week)</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Top drivers of this forecast</p>
           <ul className="mt-1 space-y-1 text-sm text-ink">
             {meta.drivers.map((d) => (
               <li key={d.label} className="flex gap-2">
@@ -43,6 +43,7 @@ export default function OutlookCard({ meta }: { meta: Meta }) {
               </li>
             ))}
           </ul>
+          <p className="mt-2 text-xs text-ink-2">Drivers are patterns the model learned from past data, not causes.</p>
         </div>
       </div>
       <p className="mt-3 text-xs text-ink-2">

@@ -35,7 +35,7 @@ For each subzone with at least 100 residents:
 
 ```
 spread   = sum over active clusters of cases × exp(−d_km / 1.0)      d = centroid to cluster polygon, SVY21
-rain     = rainfall total from day −56 to day −14 at the nearest station with data
+rain     = rainfall total from day −56 to day −14 at the nearest station missing at most 10% of those days
 temp     = mean temperature over the last 28 days at the nearest station with data
 (each converted to a 0 to 1 percentile rank across subzones)
 
@@ -71,7 +71,8 @@ Test set: 353 unseen target weeks, 2020-W01 to 2026-W39 (trained on 2012-W08 to 
 
 | Data | Source | Licence |
 |---|---|---|
-| Dengue Clusters (GeoJSON) | NEA via [data.gov.sg](https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view) | Singapore Open Data Licence |
+| Active dengue clusters (polygons, locality, cases) | JSON feed behind [NEA's cluster map](https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters) | NEA website terms of use |
+| Dengue Clusters (GeoJSON), fallback only: lags NEA's page by about a week | NEA via [data.gov.sg](https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view) | Singapore Open Data Licence |
 | Weekly Infectious Disease Bulletin Cases (2012 to 2022) | MOH via [data.gov.sg](https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view) | Singapore Open Data Licence |
 | Weekly dengue cases, 2023 onwards | [NEA Dengue Cases page](https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases) | NEA website terms of use |
 | Real-time rainfall and air temperature by station | NEA via [data.gov.sg](https://data.gov.sg/collections/1459/view) | Singapore Open Data Licence |
@@ -109,6 +110,7 @@ Daily station weather is cached in `data/cache/weather`, so each weekly run fetc
 - The forecast is island-wide only and did not beat the persistence baseline on unseen years (see results above).
 - Serotype shifts and population immunity are not observed, so large outbreaks are under-predicted.
 - The subzone index is rule-based with judgement weights and is not validated against where clusters appear later.
+- If NEA's cluster map feed is unreachable, clusters fall back to the data.gov.sg file and the dashboard shows a notice that it may be about a week stale.
 - Weather comes from limited stations: Changi for the forecast, nearest station with data for each subzone.
 - Weekly cases from 2023 come from NEA's web page, which can be revised and differs slightly from the MOH bulletin (mean absolute difference of about 9 cases a week over 2022, where both exist).
 - Vector control interventions (for example Project Wolbachia) are not modelled.
