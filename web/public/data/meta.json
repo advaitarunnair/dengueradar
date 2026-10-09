@@ -1,0 +1,122 @@
+{
+ "generated_at": "2026-10-09T17:33:10+08:00",
+ "epi_week": "2026-W40",
+ "current_cases": 71,
+ "case_week": "2026-W39",
+ "forecast_cases": 77,
+ "forecast_week": "2026-W43",
+ "pct_change": 8.8,
+ "outlook": "Stable",
+ "drivers": [
+  {
+   "label": "Cases this week",
+   "value": "71 cases",
+   "direction": "down",
+   "contribution": -0.5302,
+   "text": "Cases this week (71 cases) pushes the forecast down, compared with a typical week"
+  },
+  {
+   "label": "Cases 1 week ago",
+   "value": "82 cases",
+   "direction": "down",
+   "contribution": -0.1243,
+   "text": "Cases 1 week ago (82 cases) pushes the forecast down, compared with a typical week"
+  },
+  {
+   "label": "Rainfall 7 weeks ago",
+   "value": "0 mm",
+   "direction": "up",
+   "contribution": 0.0703,
+   "text": "Rainfall 7 weeks ago (0 mm) pushes the forecast up, compared with a typical week"
+  }
+ ],
+ "outlook_threshold_pct": 15.0,
+ "active_clusters": 8,
+ "cluster_cases": 124,
+ "clusters_updated_at": "2026-10-09T10:06:43+08:00",
+ "population_reference_year": 2025,
+ "case_data": {
+  "last_week": "2026-W39",
+  "bulletin_last_week": "2022-W52",
+  "recent_source": "nea_page",
+  "nea_fetch_ok": true,
+  "manual_topup_used": false
+ },
+ "weather": {
+  "window_end": "2026-10-08",
+  "rain_stations_with_data": 88,
+  "temp_stations_with_data": 18,
+  "changi_source": "MSS daily records to 31 Aug 2026, then real-time station S24",
+  "forecast_weather_features_missing": 0
+ },
+ "scoring": {
+  "weights": {
+   "spread": 0.6,
+   "rain": 0.3,
+   "temp": 0.1
+  },
+  "bands": {
+   "Rising": {
+    "high": 0.2,
+    "elevated": 0.2
+   },
+   "Stable": {
+    "high": 0.1,
+    "elevated": 0.2
+   },
+   "Falling": {
+    "high": 0.1,
+    "elevated": 0.2
+   }
+  },
+  "min_residents": 100,
+  "decay_km": 1.0,
+  "eligible_subzones": 241,
+  "total_subzones": 332
+ },
+ "previous_week": null,
+ "sources": [
+  {
+   "name": "Dengue Clusters (GEOJSON)",
+   "agency": "National Environment Agency",
+   "url": "https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view",
+   "licence": "Singapore Open Data Licence"
+  },
+  {
+   "name": "Weekly Infectious Disease Bulletin Cases",
+   "agency": "Ministry of Health",
+   "url": "https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view",
+   "licence": "Singapore Open Data Licence"
+  },
+  {
+   "name": "NEA Dengue Cases page (weekly cases by E-week)",
+   "agency": "National Environment Agency",
+   "url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases",
+   "licence": "NEA website terms of use"
+  },
+  {
+   "name": "Realtime Weather Readings across Singapore",
+   "agency": "National Environment Agency",
+   "url": "https://data.gov.sg/collections/1459/view",
+   "licence": "Singapore Open Data Licence"
+  },
+  {
+   "name": "Historical Daily Records (Changi)",
+   "agency": "Meteorological Service Singapore",
+   "url": "http://www.weather.gov.sg/climate-historical-daily/",
+   "licence": "Meteorological Service Singapore terms of use"
+  },
+  {
+   "name": "Master Plan 2019 Subzone Boundary (No Sea) (GEOJSON)",
+   "agency": "Urban Redevelopment Authority",
+   "url": "https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view",
+   "licence": "Singapore Open Data Licence"
+  },
+  {
+   "name": "Resident Population by Planning Area/Subzone of Residence, Age Group and Sex (General Household Survey 2025)",
+   "agency": "Singapore Department of Statistics",
+   "url": "https://tablebuilder.singstat.gov.sg/table/CT/C020123",
+   "licence": "Singapore Open Data Licence"
+  }
+ ]
+}
