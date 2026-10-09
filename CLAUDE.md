@@ -20,8 +20,11 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/pytest -q
 cd web && npm install && npm run dev      # npm run build to type-check and bundle
 ```
-On macOS without Homebrew libomp, LightGBM needs `DYLD_FALLBACK_LIBRARY_PATH=$HOME/.local/lib` (a copy of
-scikit-learn's bundled libomp.dylib lives there on the original dev machine).
+On macOS without Homebrew, LightGBM cannot find `libomp.dylib`. Fix used on the original dev machine: copy
+scikit-learn's bundled `sklearn/.dylibs/libomp.dylib` next to `lightgbm/lib/lib_lightgbm.dylib`, then
+`install_name_tool -add_rpath @loader_path` and `codesign -f -s -` on `lib_lightgbm.dylib`. CI (Linux) needs nothing.
+
+- `scripts/realtime_weather.py` daily station rain/temperature from the data.gov.sg real-time APIs, cached per day in `data/cache/weather`
 
 ## Conventions and rules
 - Never ship fabricated or simulated data. If a source fails, the job must fail loudly, not invent values.
