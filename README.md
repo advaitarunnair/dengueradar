@@ -2,7 +2,7 @@
 
 DengueRadar is a student hackathon prototype that helps Singapore's dengue inspection teams decide **where** to inspect each week, informed by a machine learning forecast of **how urgent** the next four weeks are. A LightGBM model forecasts island-wide weekly dengue cases 4 weeks ahead; a transparent rule-based index then ranks every residential URA subzone by proximity to active clusters, recent rainfall and temperature, weighted by the number of residents aged 65+ and under 15. It is a static site on GitHub Pages, refreshed weekly by GitHub Actions, with no backend.
 
-**Live site:** https://OWNER.github.io/dengueradar/
+**Live site:** https://advaitarunnair.github.io/dengueradar/
 
 > **Not an official NEA tool.** The forecast is island-wide. The subzone ranking is a rule-based index, not a prediction, and has not been validated against future clusters.
 
