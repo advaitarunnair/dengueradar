@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-11T08:34:26+08:00",
+ "generated_at": "2026-10-12T08:48:39+08:00",
  "epi_week": "2026-W41",
  "current_cases": 71,
  "case_week": "2026-W39",
@@ -50,34 +50,29 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-10",
-  "rain_stations_with_data": 84,
+  "window_end": "2026-10-11",
+  "rain_stations_with_data": 85,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
   "rain_stations_skipped": [
    {
     "id": "S203",
     "name": "Pasir Panjang",
-    "missing_days": 32
+    "missing_days": 33
    },
    {
     "id": "S224",
     "name": "Airport Boulevard",
-    "missing_days": 6
+    "missing_days": 5
    },
    {
     "id": "S303",
     "name": "S303",
-    "missing_days": 6
+    "missing_days": 5
    },
    {
     "id": "S305",
     "name": "S305",
-    "missing_days": 6
-   },
-   {
-    "id": "S307",
-    "name": "S307",
     "missing_days": 5
    },
    {
