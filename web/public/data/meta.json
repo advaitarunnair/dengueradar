@@ -1,79 +1,64 @@
 {
- "generated_at": "2026-10-12T08:48:39+08:00",
+ "generated_at": "2026-10-13T10:45:58+08:00",
  "epi_week": "2026-W41",
- "current_cases": 71,
- "case_week": "2026-W39",
- "forecast_cases": 77,
- "forecast_week": "2026-W43",
- "pct_change": 8.8,
+ "current_cases": 80,
+ "case_week": "2026-W40",
+ "forecast_cases": 78,
+ "forecast_week": "2026-W44",
+ "pct_change": -3.1,
  "outlook": "Stable",
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "71",
+   "value": "80",
    "direction": "down",
-   "contribution": -0.5302,
-   "text": "Cases this week (71) are below typical levels, pulling the forecast down"
+   "contribution": -0.4831,
+   "text": "Cases this week (80) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Cases 1 week ago",
-   "value": "82",
+   "value": "71",
    "direction": "down",
-   "contribution": -0.1243,
-   "text": "Cases 1 week ago (82) are below typical levels, pulling the forecast down"
+   "contribution": -0.135,
+   "text": "Cases 1 week ago (71) are below typical levels, pulling the forecast down"
   },
   {
-   "label": "Rainfall 7 weeks ago",
-   "value": "0 mm",
-   "direction": "up",
-   "contribution": 0.0703,
-   "text": "Rainfall 7 weeks ago (0 mm) is below typical levels, pushing the forecast up"
+   "label": "Time of year (seasonality)",
+   "value": "",
+   "direction": "down",
+   "contribution": -0.0979,
+   "text": "The time of year is pulling the forecast down"
   }
  ],
  "outlook_threshold_pct": 15.0,
  "active_clusters": 9,
- "cluster_cases": 127,
+ "cluster_cases": 130,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-10-09T20:15:33+08:00",
+  "updated_at": "2026-10-12T23:15:09+08:00",
   "fallback_used": false,
   "note": null
  },
  "population_reference_year": 2025,
  "case_data": {
-  "last_week": "2026-W39",
+  "last_week": "2026-W40",
   "bulletin_last_week": "2022-W52",
   "recent_source": "nea_page",
   "nea_fetch_ok": true,
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-11",
-  "rain_stations_with_data": 85,
+  "window_end": "2026-10-12",
+  "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
   "rain_stations_skipped": [
    {
     "id": "S203",
     "name": "Pasir Panjang",
-    "missing_days": 33
-   },
-   {
-    "id": "S224",
-    "name": "Airport Boulevard",
-    "missing_days": 5
-   },
-   {
-    "id": "S303",
-    "name": "S303",
-    "missing_days": 5
-   },
-   {
-    "id": "S305",
-    "name": "S305",
-    "missing_days": 5
+    "missing_days": 34
    },
    {
     "id": "S900",
