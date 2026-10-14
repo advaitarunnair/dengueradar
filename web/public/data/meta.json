@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-13T10:45:58+08:00",
+ "generated_at": "2026-10-14T08:43:35+08:00",
  "epi_week": "2026-W41",
  "current_cases": 80,
  "case_week": "2026-W40",
@@ -31,13 +31,13 @@
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 9,
- "cluster_cases": 130,
+ "active_clusters": 7,
+ "cluster_cases": 125,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-10-12T23:15:09+08:00",
+  "updated_at": "2026-10-13T23:27:30+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-12",
+  "window_end": "2026-10-13",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S203",
     "name": "Pasir Panjang",
-    "missing_days": 34
+    "missing_days": 35
    },
    {
     "id": "S900",
