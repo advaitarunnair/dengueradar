@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-18T07:36:12+08:00",
+ "generated_at": "2026-10-19T07:47:02+08:00",
  "epi_week": "2026-W42",
  "current_cases": 79,
  "case_week": "2026-W40",
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-17",
+  "window_end": "2026-10-18",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S203",
     "name": "Pasir Panjang",
-    "missing_days": 39
+    "missing_days": 40
    },
    {
     "id": "S900",
