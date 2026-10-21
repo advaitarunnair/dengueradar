@@ -1,19 +1,19 @@
 {
- "generated_at": "2026-10-20T08:47:13+08:00",
+ "generated_at": "2026-10-21T08:13:46+08:00",
  "epi_week": "2026-W42",
- "current_cases": 61,
+ "current_cases": 60,
  "case_week": "2026-W41",
  "forecast_cases": 62,
  "forecast_week": "2026-W45",
- "pct_change": 1.0,
+ "pct_change": 2.7,
  "outlook": "Stable",
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "61",
+   "value": "60",
    "direction": "down",
    "contribution": -0.581,
-   "text": "Cases this week (61) are below typical levels, pulling the forecast down"
+   "text": "Cases this week (60) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Cases 1 week ago",
@@ -24,20 +24,20 @@
   },
   {
    "label": "Average cases over the last 4 weeks",
-   "value": "73",
+   "value": "72",
    "direction": "down",
    "contribution": -0.1297,
-   "text": "Average cases over the last 4 weeks (73) is below typical levels, pulling the forecast down"
+   "text": "Average cases over the last 4 weeks (72) is below typical levels, pulling the forecast down"
   }
  ],
  "outlook_threshold_pct": 15.0,
  "active_clusters": 8,
- "cluster_cases": 141,
+ "cluster_cases": 142,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-10-19T23:32:41+08:00",
+  "updated_at": "2026-10-20T23:36:49+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-19",
+  "window_end": "2026-10-20",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S203",
     "name": "Pasir Panjang",
-    "missing_days": 41
+    "missing_days": 42
    },
    {
     "id": "S900",
