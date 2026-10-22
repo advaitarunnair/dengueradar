@@ -38,7 +38,7 @@ export default function Review() {
 
   useEffect(() => {
     setData(null)
-    apiGet<ReviewState>(`review${week ? `?week=${week}` : ''}`).then((d) => { setData(d); if (!week) { setWeek(d.stats.week); setWeeks([d.stats.week, d.stats.previous_week]) } }).catch((e: Error) => setError(e.message))
+    apiGet<ReviewState>(`review${week ? `?week=${week}` : ''}`).then((d) => { setData(d); if (!week) setWeeks([d.stats.week, d.stats.previous_week]) }).catch((e: Error) => setError(e.message))
   }, [week])
 
   const loadBrief = useCallback(async (refresh = false) => {
