@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import Dictation from '../components/inspect/Dictation'
+import PhotoEvidence from '../components/inspect/PhotoEvidence'
 import ReportEditor from '../components/inspect/ReportEditor'
 import { Card, DemoBadge, Status } from '../components/ui'
 import { PREMISES_TYPE, type ChecklistItem, type PremisesDetail, type ReportDraft } from '../copilot'
@@ -25,6 +26,7 @@ export default function InspectPremises() {
   const [draft, setDraft] = useState<ReportDraft | null>(null)
   const [busy, setBusy] = useState<'draft' | 'save' | null>(null)
   const [saved, setSaved] = useState<number | null>(null)
+  const [photoIds, setPhotoIds] = useState<number[]>([])
 
   useEffect(() => {
     apiGet<PremisesDetail>(`inspect?premises=${id}`).then(setDetail).catch((e: Error) => setError(e.message))
@@ -42,7 +44,7 @@ export default function InspectPremises() {
     if (!draft) return
     setBusy('save'); setError(null)
     try {
-      const r = await apiPost<{ id: number }>('inspect', { action: 'save', premises_id: Number(id), team_name: team, inspector, notes_raw: notes, report: draft })
+      const r = await apiPost<{ id: number }>('inspect', { action: 'save', premises_id: Number(id), team_name: team, inspector, notes_raw: notes, report: draft, photo_ids: photoIds })
       setSaved(r.id)
       apiGet<PremisesDetail>(`inspect?premises=${id}`).then(setDetail)
     } catch (e) { setError((e as Error).message) }
@@ -100,6 +102,11 @@ export default function InspectPremises() {
           </ul>
         )}
         {items && <p className="mt-2 text-xs text-ink-3">{ticked.size} of {items.length} checked</p>}
+      </Card>
+
+      <Card title="Photo evidence" action={<span className="text-xs text-ink-3">Nemotron VL</span>}>
+        <PhotoEvidence premisesId={p.id} fallback={{ lat: p.lat, lon: p.lon }} onNewIds={setPhotoIds} />
+        {photoIds.length > 0 && !saved && <p className="mt-2 text-xs text-ink-2">{photoIds.length} new photo(s) will be attached to the report when you save it.</p>}
       </Card>
 
       <Card title="Field notes → report" action={<span className="text-xs text-ink-3">Nemotron Super</span>}>

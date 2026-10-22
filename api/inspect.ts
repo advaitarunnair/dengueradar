@@ -51,6 +51,7 @@ export const POST = handler(async (req) => {
       return Response.json(await saveInspection({
         premises_id: premisesId, team_name: body.team_name ? String(body.team_name) : null,
         inspector: body.inspector ? String(body.inspector).slice(0, 80) : null, notes_raw: String(body.notes_raw ?? '').slice(0, 3000), report,
+        photo_ids: Array.isArray(body.photo_ids) ? body.photo_ids.map(Number).filter(Number.isFinite).slice(0, 20) : [],
       }))
     }
     default:

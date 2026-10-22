@@ -111,7 +111,7 @@ Reply with ONLY JSON: {"location": "", "habitats": [{"type": "", "location": "",
 }
 
 export async function saveInspection(input: {
-  premises_id: number; team_name: string | null; inspector: string | null; notes_raw: string; report: ReportDraft
+  premises_id: number; team_name: string | null; inspector: string | null; notes_raw: string; report: ReportDraft; photo_ids?: number[]
 }): Promise<{ id: number }> {
   const today = sgToday()
   const r = input.report
@@ -121,5 +121,7 @@ export async function saveInspection(input: {
       ${JSON.stringify(r.habitats)}::jsonb, ${r.actions_taken}, ${r.follow_up_needed}, ${r.follow_up_due}, ${input.notes_raw},
       ${JSON.stringify(r)}::jsonb, false)
     returning id`) as { id: number }[]
+  if (input.photo_ids?.length)
+    await sql()`update photos set inspection_id = ${row.id} where id = any(${input.photo_ids}) and premises_id = ${input.premises_id} and inspection_id is null`
   return row
 }
