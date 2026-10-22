@@ -1,0 +1,110 @@
+[
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Sembawang Cl (Blk 330, 339A)",
+  "cases": 2,
+  "x": 26255.1,
+  "y": 47567.5,
+  "subzone_id": "sembawang-sembawang-central"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Old Choa Chu Kang Rd ",
+  "cases": 6,
+  "x": 15181.2,
+  "y": 39869.0,
+  "subzone_id": "western-water-catchment-murai"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Soon Lee Rd",
+  "cases": 6,
+  "x": 13165.4,
+  "y": 34859.2,
+  "subzone_id": "jurong-west-kian-teck"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Bt Batok St 21 (Blk 201, 207, 209, 210) ",
+  "cases": 5,
+  "x": 18644.1,
+  "y": 36505.3,
+  "subzone_id": "bukit-batok-bukit-batok-central"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Bishan St 12 (Blk 109, 110, 111, 115, 116, 118)",
+  "cases": 11,
+  "x": 29770.7,
+  "y": 36614.1,
+  "subzone_id": "bishan-bishan-east"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Ho Ching Rd (Blk 117, 119, 120) / Kang Ching Rd (Blk 333, 334, 335) / Tah Ching Rd (Blk 321, 322, 323, 324, 326, 329, 330, 331, 332) / Yuan Ching Rd / Yuan Ching Rd (Blk 122) / Yuan Ching Rd (Lakeside Twr) / Yung Sheng Rd (Blk 182)",
+  "cases": 90,
+  "x": 15750.7,
+  "y": 35340.8,
+  "subzone_id": "jurong-west-taman-jurong"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Kranji Rd",
+  "cases": 2,
+  "x": 19805.6,
+  "y": 45905.2,
+  "subzone_id": "sungei-kadut-kranji"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Pasir Ris Lk (Seastrand, Watercolours)",
+  "cases": 2,
+  "x": 42138.2,
+  "y": 39794.9,
+  "subzone_id": "pasir-ris-pasir-ris-park"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Lentor Gdns",
+  "cases": 4,
+  "x": 27989.1,
+  "y": 40568.5,
+  "subzone_id": "ang-mo-kio-tagore"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "Pillai Rd / Upp Paya Lebar Rd",
+  "cases": 3,
+  "x": 33138.5,
+  "y": 36607.0,
+  "subzone_id": "serangoon-upper-paya-lebar"
+ },
+ {
+  "first_seen": "2026-10-09",
+  "epi_week": "2026-W40",
+  "locality": "North Coast Ave",
+  "cases": 2,
+  "x": 22825.5,
+  "y": 48707.1,
+  "subzone_id": "woodlands-north-coast"
+ },
+ {
+  "first_seen": "2026-10-14",
+  "epi_week": "2026-W41",
+  "locality": "Cantoment Rd (Blk 1D, 1F) / Tg Pagar Plaza (Blk 4)",
+  "cases": 3,
+  "x": 28952.9,
+  "y": 28820.2,
+  "subzone_id": "outram-chinatown"
+ }
+]

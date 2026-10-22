@@ -12,6 +12,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
+import ranking_check
 import realtime_weather
 from common import (DATA, RAW, WEB_DATA, date_to_epi_week, dgs_metadata, dgs_poll_download, epi_label,
                     epi_week_start, http_get,
@@ -438,6 +439,11 @@ def main() -> None:
                 "subzones": {r["subzone_id"]: {"rank": int(r["rank"]), "band": r["band"], "risk": float(r["risk"]),
                                                "priority": float(r["priority"])} for _, r in eligible.iterrows()}}
     (HISTORY / f"{week.replace('-W', '-')}.json").write_text(json.dumps(snapshot, separators=(",", ":")))
+    # Early check of the ranking against clusters that appear later (sample size is shown on the site).
+    added = ranking_check.update_log(clusters, now.date(), cfg)
+    check = ranking_check.write_check()
+    print(f"Ranking early check: {len(added)} new cluster(s) today; {check['in_high_prior_week']} of {check['new_clusters']} "
+          f"new clusters since {check['since']} were in a subzone flagged High the week before.")
 
     print(f"\nBands: {eligible['band'].value_counts().to_dict()} of {len(eligible)} eligible subzones")
     print("Top 10 by priority:")

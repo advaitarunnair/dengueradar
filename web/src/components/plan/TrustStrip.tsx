@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useData } from '../../lib/data'
 import type { ModelEval } from '../../types'
 
-interface EarlyCheck { new_clusters: number; in_high_prior_week: number; in_high_or_elevated_prior_week: number; weeks: string[] }
+interface EarlyCheck { new_clusters: number; in_high_prior_week: number; in_high_or_elevated_prior_week: number; since: string | null }
 
 /** Why (and how far) to trust the rankings: the forecast backtest as it is, and the index's early check. */
 export default function TrustStrip() {
@@ -24,7 +24,7 @@ export default function TrustStrip() {
         <p className="font-semibold text-ink">Subzone ranking: rule-based index, not yet validated</p>
         <p className="mt-1">
           {early && early.new_clusters > 0
-            ? <>Early check: {early.in_high_prior_week} of {early.new_clusters} new clusters since {early.weeks[0]} appeared in a subzone flagged High the week before ({early.in_high_or_elevated_prior_week} in High or Elevated). Sample of {early.new_clusters}: too small to conclude anything yet.</>
+            ? <>Early check: {early.in_high_prior_week} of {early.new_clusters} new cluster{early.new_clusters === 1 ? '' : 's'} since {early.since} appeared in a subzone flagged High the week before ({early.in_high_or_elevated_prior_week} in High or Elevated). A sample of {early.new_clusters} is far too small to conclude anything yet.</>
             : <>Early check starts once new clusters appear after the first weekly snapshot.</>}
         </p>
       </div>

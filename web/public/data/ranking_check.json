@@ -1,0 +1,20 @@
+{
+ "new_clusters": 1,
+ "in_high_prior_week": 0,
+ "in_high_or_elevated_prior_week": 0,
+ "weeks": [
+  "2026-W40"
+ ],
+ "since": "2026-10-09",
+ "clusters": [
+  {
+   "first_seen": "2026-10-14",
+   "locality": "Cantoment Rd (Blk 1D, 1F) / Tg Pagar Plaza (Blk 4)",
+   "cases": 3,
+   "subzone_id": "outram-chinatown",
+   "snapshot_week": "2026-W40",
+   "band_week_before": "Low"
+  }
+ ],
+ "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
+}
