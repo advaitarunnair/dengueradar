@@ -8,7 +8,13 @@
     "skipLibCheck": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["api/**/*.ts", "scripts/**/*.ts"]
+  "include": [
+    "api/**/*.ts",
+    "scripts/**/*.ts",
+    "job/**/*.ts"
+  ]
 }
