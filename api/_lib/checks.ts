@@ -3,7 +3,8 @@
  * a tool result or in the officer's constraints (allowing for rounding). Unmatched numbers are flagged.
  */
 
-const NUMBER = /-?\d[\d,]*(?:\.\d+)?/g
+// A minus sign only counts when it is not a range dash ("2-8 weeks" is 2 and 8, not 2 and -8).
+const NUMBER = /(?<![\d.])-?\d[\d,]*(?:\.\d+)?/g
 
 function values(text: string): number[] {
   return (text.match(NUMBER) ?? []).map((t) => Number(t.replace(/,/g, ''))).filter((v) => Number.isFinite(v))

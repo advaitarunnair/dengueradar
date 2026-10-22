@@ -234,6 +234,8 @@ export async function generatePlan(opts: {
   // Team allocation. The model sets each team's home regions and proposes a team per area; code keeps the
   // proposal when it matches the team's home and capacity, otherwise uses the team whose home covers the
   // area's region, otherwise the nearest team with room. Geometry stays in code.
+  // Allocate in island priority order so the top areas get a team first; lower ones are skipped if needed.
+  chosen.sort((x, y) => (findArea(x.subzone_id)!.rank ?? 999) - (findArea(y.subzone_id)!.rank ?? 999))
   const stops = await premisesFor(chosen.map((a) => a.subzone_id))
   const count = (id: string) => stops.filter((s) => s.subzone_id === id).length
   const load_: Record<string, number> = Object.fromEntries(c.teams.map((t) => [t, 0]))
@@ -300,12 +302,17 @@ export async function generatePlan(opts: {
   const areaText = areas.map((a) => `${a.reason} ${a.focus}`).join('\n')
   // Snippets of cited sources may legitimately contain numbers (e.g. cluster case counts in a news story).
   for (const s of runner.sources) ledger.add(s.snippet + ' ' + s.title)
-  // Totals the summary might state correctly, computed by code.
-  ledger.add({ areas: areas.length, premises: areas.reduce((t, a) => t + a.premises, 0), regions: new Set(areas.map((a) => a.region)).size })
-  // Summary sentences with a number we cannot verify are removed rather than shown with a warning.
+  // The summary is checked against headline facts only (not every tool result), so a number that merely
+  // appears somewhere in the data cannot pass. Sentences with an unverifiable number are removed.
+  const headline = new NumberLedger()
+  headline.add({ current: meta.current_cases, forecast: meta.forecast_cases, clusters: meta.active_clusters, cluster_cases: meta.cluster_cases,
+    weeks: [meta.case_week, meta.forecast_week, meta.epi_week], capacity, teamCapacity, teams: c.teams.length, days: c.days, per_day: c.per_day,
+    areas: areas.length, premises: areas.reduce((t, a) => t + a.premises, 0), horizon: 4 })
+  for (const a of areas) headline.add(areaFacts(findArea(a.subzone_id)!))
+  for (const s of runner.sources) headline.add(s.title)
   const sentences = (parsed.summary ?? '').split(/(?<=[.!?])\s+/).filter(Boolean)
-  const keep = sentences.filter((x) => !ledger.unsupported(x).length)
-  const removedSentences = sentences.filter((x) => ledger.unsupported(x).length)
+  const keep = sentences.filter((x) => !headline.unsupported(x).length)
+  const removedSentences = sentences.filter((x) => headline.unsupported(x).length)
   parsed.summary = keep.join(' ')
   const unsupported = ledger.unsupported([parsed.summary, ...context.map((x) => x.note)].join('\n'))
 
