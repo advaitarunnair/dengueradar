@@ -5,7 +5,8 @@
   "scripts": {
     "check:nebius": "tsx scripts/check_nebius.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:migrate": "tsx scripts/db_migrate.ts"
+    "db:migrate": "tsx scripts/db_migrate.ts",
+    "db:seed-demo": "tsx scripts/db_seed_demo.ts"
   },
   "engines": {
     "node": "24.x"
