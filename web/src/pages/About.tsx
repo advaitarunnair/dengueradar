@@ -16,9 +16,38 @@ export default function About() {
     <div className="space-y-5">
       <Card title="The problem">
         <div className="max-w-3xl space-y-3 text-sm leading-relaxed text-ink">
-          <p>Dengue inspection teams have limited hours each week. Active clusters show where transmission is happening now, but they do not say which nearby neighbourhoods to check next, or how much effort the coming month deserves.</p>
-          <p>DengueRadar is a weekly shortlist for NEA vector control officers, operations planners and town councils. It answers two questions: how urgent are the next four weeks (a machine learning forecast), and where should teams look first (a transparent subzone ranking).</p>
+          <p>Dengue inspection teams have limited hours each week. Active clusters show where transmission is happening now, but deciding which neighbourhoods to check next, splitting the work between teams, writing up every visit and spotting premises that keep breeding all take officers’ time away from inspecting.</p>
+          <p>DengueRadar Copilot is an AI agent that runs a dengue inspection team’s week end to end, for NEA vector control officers, operations planners and town council teams. It works from a real, weekly-refreshed risk ranking and an island-wide machine learning forecast.</p>
         </div>
+      </Card>
+      <Card title="How the Copilot runs the week">
+        <ol className="max-w-3xl list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ink">
+          <li><strong>Plan.</strong> The agent looks up this week’s rankings, area details and recent news with tools, then drafts which subzones to inspect, why, and which team takes each. Officers ask why, or push back (“only 2 teams”, “skip areas done last week”); the agent re-plans and shows what changed. Code fits the plan to team capacity and orders each team’s visits by nearest neighbour. Officers confirm, and visits are assigned to teams with printable team sheets.</li>
+          <li><strong>Inspect.</strong> On site, each premises gets a checklist tailored to its type, layout and breeding history. Inspectors type or dictate rough notes and the agent turns them into a structured service report they can edit before saving. Photos are labelled (container, puddle, drain) and unclear ones flagged for a retake.</li>
+          <li><strong>Review.</strong> Counts, trends and overdue actions are computed from the saved reports; the agent writes the supervisor’s weekly briefing from those numbers. Premises with repeat breeding are detected in SQL, explained, and given an escalation step.</li>
+        </ol>
+      </Card>
+      <Card title="NVIDIA Nemotron on Nebius Token Factory">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+            <thead><tr className="border-b border-line text-xs uppercase tracking-wide text-ink-3"><th className="py-2 pr-3 font-medium">Model</th><th className="py-2 pr-3 font-medium">Used for</th><th className="py-2 font-medium">Why this one</th></tr></thead>
+            <tbody>
+              <tr className="border-b border-line"><td className="py-2 pr-3 font-medium">Nemotron 3 Ultra</td><td className="py-2 pr-3">Weekly plan and re-planning (tool calling)</td><td className="py-2 text-ink-2">Hardest reasoning: trading off risk, people, capacity and geography</td></tr>
+              <tr className="border-b border-line"><td className="py-2 pr-3 font-medium">Nemotron 3 Super</td><td className="py-2 pr-3">Copilot answers, service reports, supervisor briefing</td><td className="py-2 text-ink-2">Strong writing and structured JSON at lower cost</td></tr>
+              <tr className="border-b border-line"><td className="py-2 pr-3 font-medium">Nemotron 3 Nano</td><td className="py-2 pr-3">Site checklists, repeat-offender explanations</td><td className="py-2 text-ink-2">Fast and cheap for short, frequent tasks on site</td></tr>
+              <tr><td className="py-2 pr-3 font-medium">Nemotron 3.5 Super VL</td><td className="py-2 pr-3">Photo classification and retake flags</td><td className="py-2 text-ink-2">Vision-language model for inspection photos</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink">
+          <li>Every number the agent writes is checked in code against our data. A plan reason may only use its own area’s figures; anything unverifiable is removed or flagged on screen.</li>
+          <li>Geometry and arithmetic stay in code: capacity checks, team geography fallbacks and nearest-neighbour visit order.</li>
+          <li>Recent context comes from Tavily search, filtered to Singapore sources, and is cited by source.</li>
+          <li>Credit safety: a daily token cap, per-session limits, and cached plans, checklists and briefings.</li>
+        </ul>
+      </Card>
+      <Card title="Demo data">
+        <p className="max-w-3xl text-sm leading-relaxed text-ink">Premises (“Demo Blk 214, Serangoon Garden”) and past inspection records are <strong>fictional demo data</strong>, placed inside real subzone boundaries so every stage can be shown. They are marked with a dashed “Demo” badge. Rankings, clusters, weather and the forecast are real data. Reports and photos saved in this app are stored in the prototype’s database.</p>
       </Card>
       <Card title="How the ranking works">
         <div className="max-w-3xl space-y-3 text-sm leading-relaxed text-ink">
@@ -52,7 +81,7 @@ priority = risk × (residents aged 65+ and under 15)`}</pre>
           </table>
         </div>
         <p className="mt-3 text-xs text-ink-2">Rainfall this week: {meta.weather.rain_stations_with_data} stations used. {meta.weather.rain_stations_skipped.length} skipped for missing more than {meta.weather.rain_max_missing_share * 100}% of the {meta.weather.rain_window_days}-day window{meta.weather.rain_stations_skipped.length > 0 ? ` (${meta.weather.rain_stations_skipped.map((s) => `${s.name === s.id ? s.id : `${s.name} ${s.id}`}: ${s.missing_days} days`).join('; ')})` : ''}; subzones near them use the next nearest station.</p>
-        <p className="mt-2 text-xs text-ink-2">Population reference year: {meta.population_reference_year}. Weekly cases to {meta.case_data.bulletin_last_week} are from the MOH bulletin; later weeks are from NEA's published weekly counts. Datasets from data.gov.sg and SingStat are used under the <a className="text-accent underline" href="https://data.gov.sg/open-data-licence" target="_blank" rel="noreferrer">Singapore Open Data Licence</a>. Map tiles © OpenStreetMap contributors.</p>
+        <p className="mt-2 text-xs text-ink-2">Population reference year: {meta.population_reference_year}. Weekly cases to {meta.case_data.bulletin_last_week} are from the MOH bulletin; later weeks are from NEA's published weekly counts. Recent news context in plans comes from Tavily search. Datasets from data.gov.sg and SingStat are used under the <a className="text-accent underline" href="https://data.gov.sg/open-data-licence" target="_blank" rel="noreferrer">Singapore Open Data Licence</a>. Map tiles © OpenStreetMap contributors.</p>
       </Card>
       <Card title="The team: DefinitelyBillionaires">
         <ul className="space-y-1.5 text-sm text-ink">

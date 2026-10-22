@@ -1,14 +1,31 @@
-# DengueRadar
+# DengueRadar Copilot
 
-Student hackathon prototype (not an official NEA tool). A static site that ranks Singapore subzones for
-dengue inspection each week, with an island-wide LightGBM forecast of weekly cases 4 weeks ahead.
+Student hackathon prototype (not an official NEA tool). An AI agent (NVIDIA Nemotron on Nebius Token Factory)
+that runs a dengue inspection team's week: Plan / Inspect / Review. Built on DengueRadar's daily-refreshed
+subzone risk ranking and island-wide LightGBM forecast. Hosted on Vercel (static `web/` + serverless `api/`),
+Neon Postgres for state. Live: https://dengueradar.vercel.app
+
+## Copilot (TypeScript, `api/`)
+- `api/_lib/llm.ts` Token Factory client, model IDs (ULTRA/SUPER/NANO/VL), `complete()` = budget check + usage log + `<think>` strip.
+  Reasoning is OFF by default (`enable_thinking: false`); Ultra with reasoning on invented tools in testing.
+- `api/_lib/guard.ts` daily token cap + per-session limits (`llm_usage` table). Every model call must go through `complete()`.
+- `api/_lib/planner.ts` two-phase plan agent: Ultra researches with `tools.ts`, then decides in JSON from a code-built candidate table.
+  Code enforces capacity, team regions (no cross-island detours), routing (`routing.ts`) and number checks (`checks.ts`).
+- `api/_lib/copilot.ts` Super routes questions vs re-plans; `inspect.ts` checklists (Nano) and reports (Super); `review.ts` SQL stats,
+  briefing (Super), repeat offenders (SQL + Nano); `photos.ts` VL classification.
+- Endpoints: `api/plan.ts`, `api/copilot.ts`, `api/inspect.ts`, `api/review.ts`, `api/photos.ts`, `api/health.ts`.
+- `db/schema.sql` (run `npm run db:migrate`); demo data: `scripts/make_demo_data.py` -> `db/demo_seed.json` -> `npm run db:seed-demo`.
+- Local: `vercel dev` (reads `.env` only, so `DATABASE_URL` must be copied there from `.env.local`). `npm run check:nebius`.
+- Rule: any number an LLM writes must be verifiable against data passed to it; unverifiable text is removed or flagged, never shown silently.
+- Rule: premises and inspection history are DEMO data and must stay labelled as such in the UI.
 
 ## Layout
 - `scripts/common.py` HTTP client (cache, retry, backoff), data.gov.sg helpers, epi weeks, case and weather loaders
 - `scripts/download_static.py` run once: subzone boundaries + SingStat population -> `data/subzone_population.csv`, `web/public/data/subzones.geojson`
 - `scripts/train_model.py` run once: train + evaluate -> `models/forecast.joblib`, `web/public/data/{model_eval,forecast_test,feature_importance}.json`
 - `scripts/build_scores.py` weekly job -> `web/public/data/{scores.geojson,clusters.geojson,meta.json}`, `data/history/YYYY-WW.json`
-- `web/` React + Vite + TypeScript + Tailwind, HashRouter, base `/dengueradar/`; reads everything from `web/public/data`
+- `web/` React + Vite + TypeScript + Tailwind, HashRouter, base `/` on Vercel; static data from `web/public/data`, Copilot via `/api`
+- `scripts/ranking_check.py` early check of the ranking vs new clusters (`data/history/cluster_log.json`, `ranking_check.json`)
 - `config.yaml` verified dataset IDs/URLs, scoring weights, thresholds
 
 ## Commands

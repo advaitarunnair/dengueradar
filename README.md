@@ -1,51 +1,60 @@
-# DengueRadar
+# DengueRadar Copilot
 
-DengueRadar is a student hackathon prototype that helps Singapore's dengue inspection teams decide **where** to inspect each week, informed by a machine learning forecast of **how urgent** the next four weeks are. A LightGBM model forecasts island-wide weekly dengue cases 4 weeks ahead; a transparent rule-based index then ranks every residential URA subzone by proximity to active clusters, recent rainfall and temperature, weighted by the number of residents aged 65+ and under 15. It is a static site on GitHub Pages, refreshed weekly by GitHub Actions, with no backend.
+**An AI agent that runs a dengue inspection team's week, end to end.** Built for NEA vector control officers, operations planners and town council teams in Singapore. The agent plans the week from real risk rankings, adapts the plan when officers push back, guides inspectors on site, turns their rough notes into formal reports, and writes the supervisor's weekly review, using NVIDIA Nemotron models on Nebius Token Factory.
 
-**Live site:** https://advaitarunnair.github.io/dengueradar/
+**Live app:** https://dengueradar.vercel.app
 
-> **Not an official NEA tool.** The forecast is island-wide. The subzone ranking is a rule-based index, not a prediction, and has not been validated against future clusters.
+> **Student prototype, not an official NEA tool.** Plans, checklists, reports and briefings are drafted by AI and must be checked by an officer. The forecast is island-wide; the subzone ranking is a transparent rule-based index that has not yet been validated. **Premises and inspection records are demo data** (see [Demo data](#demo-data)).
 
-## Screenshots
+## Who it is for and what it does
 
-| Dashboard | Selected subzone |
-|---|---|
-| ![Dashboard](docs/screenshots/dashboard.jpg) | ![Selected subzone](docs/screenshots/subzone.jpg) |
+| Stage | Who | What the Copilot does |
+|---|---|---|
+| **1. Plan** | Operations planner | Ultra drafts the week's plan from our rankings, area history and recent news (tool calls), with a reason per area and a team per area. The officer asks *why*, or sets constraints ("only 2 teams", "skip areas inspected last week", "8 premises a day"); the agent re-plans and shows what changed. Code fits capacity and orders visits (nearest neighbour). Confirm, then assign to teams and print team sheets. |
+| **2. Inspect** | Inspector on a phone | Visit list per team and day. Each premises gets a checklist tailored to its type, layout and breeding history (Nano). Notes are typed or dictated, and Super turns them into a structured service report (JSON) that the inspector edits before saving. Photos are classified by VL, with unclear ones flagged for a retake. |
+| **3. Review** | Supervisor | Counts, trends against last week, overdue actions and re-inspections are computed in SQL; Super writes the briefing from those numbers. Repeat or multiple breeding at the same premises is detected in SQL, explained by Nano, and given a rule-based escalation step. |
 
-| Inspection list | Model page |
-|---|---|
-| ![Inspection list](docs/screenshots/inspection-list.jpg) | ![Model page](docs/screenshots/model.jpg) |
+The original DengueRadar risk map, forecast and model evaluation are still in the app under **Risk map** and **Model**.
 
-## The problem
+## How we use NVIDIA Nemotron + Nebius Token Factory
 
-Inspection teams have limited hours. Active clusters show where transmission is happening now, but not which nearby neighbourhoods to check next or how much effort the coming month deserves. DengueRadar gives NEA vector control officers, operations planners and town councils a weekly shortlist sized to their capacity.
+All model calls go server-side through Token Factory's OpenAI-compatible API (`https://api.tokenfactory.nebius.com/v1/`), with the key in `NEBIUS_API_KEY`; it is never sent to the browser. See `api/_lib/llm.ts`.
 
-## How it works
+| Model | ID | Used for | Why |
+|---|---|---|---|
+| Nemotron 3 Ultra | `nvidia/Nemotron-3-Ultra-550b-a55b` | Weekly plan and re-planning: tool calling (`rank_areas`, `get_area_risk`, `get_area_history`, `search_recent_context`), then a JSON decision on areas and team regions | The hardest reasoning: risk, vulnerable people, capacity and geography at once |
+| Nemotron 3 Super | `nvidia/nemotron-3-super-120b-a12b` | Copilot answers (with tools), routing questions vs plan changes, notes to service report (JSON), supervisor briefing | Strong writing and reliable JSON at lower cost |
+| Nemotron 3 Nano | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Site checklists, repeat-offender explanations | Fast and cheap for short, frequent tasks on site |
+| Nemotron 3.5 Super VL | `nvidia/Nemotron-3.5-Super-VL` | Photo classification (container / puddle / drain / other) and retake flags | Vision-language |
 
-### 1. ML forecast ("when")
+What we learned and built around:
+- **Reasoning is switched off by default** (`chat_template_kwargs.enable_thinking=false`). It saved roughly 90% of tokens on short tasks. In testing, Ultra with reasoning on also invented a tool and figures for it, so the plan runs with reasoning off and unknown tool calls are rejected. Any `<think>` text is stripped before users see output.
+- **Two-phase agent.** Ultra researches with tools, then makes its decision in strict JSON mode, choosing only from a candidate table built by code. Free-text final answers drifted from the format.
+- **Every number is checked in code** (`api/_lib/checks.ts`). Each plan reason may only use its own area's figures, otherwise it is replaced with code-written facts. Summary sentences and briefing points with unverifiable numbers are removed, and the UI says so. Checklist claims about past breeding are checked against the premises' history.
+- **Geometry stays out of the LLM.** The model chooses areas and team home regions; code enforces capacity, keeps teams local (no cross-island detours) and orders visits by nearest neighbour (`api/_lib/routing.ts`).
+- **Credit safety** (`api/_lib/guard.ts`): a global daily token cap (`DAILY_TOKEN_CAP`), per-session hourly call limits, per-session limits on Ultra plan runs, sensible `max_tokens` everywhere, and caching of plans, checklists, briefings and flag explanations in Postgres.
 
-- Target: `log1p(weekly dengue cases)` 4 weeks ahead, island-wide (Dengue Fever + Dengue Haemorrhagic Fever).
-- Features at week *t* (only information available at the end of week *t*): log cases at lags 0 to 3, 4-week mean and slope, Changi rainfall and mean temperature at lags 2 to 8 weeks and their 7-week aggregates, week of year as sin/cos.
-- Time-based split: train on target weeks up to 2019 (last 52 weeks for early stopping and light tuning), test on 2020 onwards.
-- Outlook: **Rising** if the forecast is at least 15% above current weekly cases, **Falling** if at least 15% below, otherwise **Stable**.
+## Tavily
 
-### 2. Subzone ranking ("where")
+`search_recent_context` (`api/_lib/tavily.ts`) searches recent news through the Tavily API (`TAVILY_API_KEY`, server-side). Results are filtered to Singapore-related, non-social-media sources, cached for 12 hours, given ids (S1, S2…) and cited in the plan's "Recent context" with links. The agent may only cite sources it actually retrieved.
 
-For each subzone with at least 100 residents:
+## Demo data
 
-```
-spread   = sum over active clusters of cases × exp(−d_km / 1.0)      d = centroid to cluster polygon, SVY21
-rain     = rainfall total from day −56 to day −14 at the nearest station missing at most 10% of those days
-temp     = mean temperature over the last 28 days at the nearest station with data
-(each converted to a 0 to 1 percentile rank across subzones)
+Premises (for example "Demo Blk 214, Serangoon Garden") and 8 weeks of past inspections are **fictional**, generated by `scripts/make_demo_data.py` and placed at random points inside the real URA subzone boundaries, so every stage can be demonstrated. Real addresses are deliberately not used, so no real home is linked to made-up breeding records. Demo rows are flagged `is_demo` and shown with a dashed **Demo** badge. Forecasts, rankings, clusters and weather are real data. Reports and photos saved through the app are stored in the prototype's database.
 
-risk     = 0.6 × spread + 0.3 × rain + 0.1 × temp
-priority = risk × (residents aged 65+ and under 15)
-```
+## What's new during the hackathon submission period
 
-The forecast sets how wide the net is: when the outlook is Rising the top 20% by risk are **High** and the next 20% **Elevated**; when Stable or Falling the top 10% are High and the next 20% Elevated. The inspection list is sorted by priority.
+Everything below was added for the Nebius x NVIDIA Global AI Hackathon (Best Apps and Agents), on top of the earlier static DengueRadar dashboard:
 
-## Model results
+- **Copilot app on Vercel** (static frontend plus serverless API under `/api`), replacing GitHub Pages. Neon Postgres for plans, chat, assignments, inspections, photos, cache and usage.
+- **Plan:** a Nemotron Ultra planning agent with four tools, live step-by-step progress, per-area fact checks, team home regions, capacity enforcement and nearest-neighbour routes; versioned, cached plans with Regenerate.
+- **Copilot chat:** Super answers questions with tools and routes constraint changes to Ultra re-plans, with a computed diff of what changed. Confirm a plan to assign visits to teams; printable, shareable team sheets (save as PDF).
+- **Inspect:** mobile visit lists, Nano site checklists checked against history, browser dictation, Super notes-to-report in JSON with an editable form, and VL photo evidence with retake flags.
+- **Review:** SQL weekly stats vs last week, a Super supervisor briefing with number checks, and repeat-offender detection with Nano explanations and escalation rules.
+- **Trust:** the forecast backtest shown as it is, and a new **ranking early check** (`scripts/ranking_check.py`, updated daily) counting whether new clusters appeared in subzones flagged High the week before, with its sample size.
+- Credit guard, demo data generator, MIT licence, and this README.
+
+## Model results (island-wide forecast)
 
 Test set: 353 unseen target weeks, 2020-W01 to 2026-W39 (trained on 2012-W08 to 2019-W52, 410 weeks). Copied from `web/public/data/model_eval.json`.
 
@@ -67,58 +76,62 @@ Test set: 353 unseen target weeks, 2020-W01 to 2026-W39 (trained on 2012-W08 to 
 
 **Honest summary:** the model did not beat persistence on unseen weeks (higher MAE and MAPE, overall and in outbreak weeks), although it was far better than seasonal naive. The 2020 and 2022 outbreaks peaked at about twice the highest level in the training years, which tree models cannot extrapolate to; what the model adds over persistence is a direction call, correct in about 59% of test weeks and 73% of outbreak weeks.
 
+## Run locally
+
+Requirements: Python 3.11+, Node 20+ (24 on Vercel), the Vercel CLI, and API keys.
+
+```bash
+# Python pipeline (data refresh, already run daily by GitHub Actions)
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/pytest -q
+
+# App
+npm install && npm install --prefix web
+cp .env.example .env            # paste NEBIUS_API_KEY and TAVILY_API_KEY
+vercel link && vercel env pull .env.local   # DATABASE_URL from the Neon integration
+grep DATABASE_URL .env.local >> .env        # vercel dev reads .env only
+npm run db:migrate                          # create tables
+npm run db:seed-demo                        # load demo premises and inspections
+npm run check:nebius                        # confirm the four Nemotron models respond
+vercel dev                                  # app and API on http://localhost:3000
+```
+
+## Deploy
+
+1. Import the GitHub repo into Vercel (it uses `vercel.json`: builds `web/`, serves `api/` functions).
+2. In Vercel, go to **Storage**, create **Neon** and connect it to the project (sets `DATABASE_URL`).
+3. In **Settings > Environment Variables** add `NEBIUS_API_KEY`, `TAVILY_API_KEY` (Sensitive) and optionally `DAILY_TOKEN_CAP`, `SESSION_CALLS_PER_HOUR`, `SESSION_ULTRA_CALLS_PER_HOUR`.
+4. Run `npm run db:migrate` and `npm run db:seed-demo` once against that database.
+5. Every push to `main` deploys. The daily GitHub Action (`.github/workflows/refresh-and-deploy.yml`, 06:00 SGT) refreshes clusters, weather, forecast and rankings and commits them, which triggers a redeploy.
+
 ## Data sources and licences
 
 | Data | Source | Licence |
 |---|---|---|
-| Active dengue clusters (polygons, locality, cases) | JSON feed behind [NEA's cluster map](https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters) | NEA website terms of use |
-| Dengue Clusters (GeoJSON), fallback only: lags NEA's page by about a week | NEA via [data.gov.sg](https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view) | Singapore Open Data Licence |
-| Weekly Infectious Disease Bulletin Cases (2012 to 2022) | MOH via [data.gov.sg](https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view) | Singapore Open Data Licence |
+| Active dengue clusters (polygons, locality, cases) | Feed behind [NEA's cluster map](https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters) | NEA website terms of use |
+| Dengue Clusters (GeoJSON), fallback | NEA via [data.gov.sg](https://data.gov.sg/datasets/d_dbfabf16158d1b0e1c420627c0819168/view) | Singapore Open Data Licence |
+| Weekly Infectious Disease Bulletin (2012 to 2022) | MOH via [data.gov.sg](https://data.gov.sg/datasets/d_ca168b2cb763640d72c4600a68f9909e/view) | Singapore Open Data Licence |
 | Weekly dengue cases, 2023 onwards | [NEA Dengue Cases page](https://www.nea.gov.sg/dengue-zika/dengue/dengue-cases) | NEA website terms of use |
-| Real-time rainfall and air temperature by station | NEA via [data.gov.sg](https://data.gov.sg/collections/1459/view) | Singapore Open Data Licence |
-| Historical daily records, Changi (S24) | [Meteorological Service Singapore](http://www.weather.gov.sg/climate-historical-daily/) | MSS terms of use |
-| Master Plan 2019 Subzone Boundary (No Sea) | URA via [data.gov.sg](https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view) | Singapore Open Data Licence |
-| Resident population by subzone, age group and sex (GHS 2025) | [SingStat Table Builder C020123](https://tablebuilder.singstat.gov.sg/table/CT/C020123) | Singapore Open Data Licence |
-
-All dataset IDs and URLs are recorded in `config.yaml` after being confirmed through the APIs. No data on the site is simulated.
-
-## Run locally
-
-```bash
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python scripts/download_static.py   # once: boundaries + population
-.venv/bin/python scripts/train_model.py       # once: train and evaluate the forecast
-.venv/bin/python scripts/build_scores.py      # weekly: clusters, weather, forecast, scores
-.venv/bin/pytest -q
-
-cd web
-npm install
-npm run dev        # http://localhost:5173/dengueradar/
-npm run build
-```
-
-Set `DATA_GOV_SG_API_KEY` to send an API key to data.gov.sg (optional; raises rate limits).
-
-## Weekly automation
-
-`.github/workflows/refresh-and-deploy.yml` runs every day at 06:00 SGT (and on manual dispatch). The site's **Refresh data** button loads the newest published run without a page reload; it cannot start a run, because the site has no server. The **refresh** job runs the tests and `build_scores.py`, then commits changed data as `github-actions[bot]` ("Weekly data refresh YYYY-WW"). The **deploy** job builds `web/` and publishes it to GitHub Pages. A push to `main` runs the deploy job only.
-
-Daily station weather is cached in `data/cache/weather`, so each run fetches only the new days. Each run saves a snapshot to `data/history/YYYY-WW.json`, which the next run uses for week-on-week rank changes.
+| Real-time rainfall and air temperature | NEA via [data.gov.sg](https://data.gov.sg/collections/1459/view) | Singapore Open Data Licence |
+| Historical daily records, Changi | [Meteorological Service Singapore](http://www.weather.gov.sg/climate-historical-daily/) | MSS terms of use |
+| Master Plan 2019 Subzone Boundary | URA via [data.gov.sg](https://data.gov.sg/datasets/d_8594ae9ff96d0c708bc2af633048edfb/view) | Singapore Open Data Licence |
+| Resident population by subzone and age (GHS 2025) | [SingStat Table Builder C020123](https://tablebuilder.singstat.gov.sg/table/CT/C020123) | Singapore Open Data Licence |
+| Recent news context | [Tavily](https://tavily.com) search API | Source sites' terms |
 
 ## Limitations
 
-- The forecast is island-wide only and did not beat the persistence baseline on unseen years (see results above).
-- Serotype shifts and population immunity are not observed, so large outbreaks are under-predicted.
-- The subzone index is rule-based with judgement weights and is not validated against where clusters appear later.
-- If NEA's cluster map feed is unreachable, clusters fall back to the data.gov.sg file and the dashboard shows a notice that it may be about a week stale.
-- Weather comes from limited stations: Changi for the forecast, nearest station with data for each subzone.
-- Weekly cases from 2023 come from NEA's web page, which can be revised and differs slightly from the MOH bulletin (mean absolute difference of about 9 cases a week over 2022, where both exist).
-- Vector control interventions (for example Project Wolbachia) are not modelled.
+- The forecast is island-wide only and did not beat persistence on error in the backtest (see above).
+- The subzone ranking is a rule-based index with judgement weights; the early check has a sample of 1 new cluster so far.
+- AI-drafted text is checked for numbers, not for every qualitative claim; officers must review plans and reports.
+- Premises and past inspections are demo data; repeat-offender and review figures are therefore illustrative.
+- Weather comes from limited stations; serotype shifts, immunity and interventions such as Wolbachia releases are not modelled.
 
 ## Team: DefinitelyBillionaires
 
-| Name | Role | Focus |
-|---|---|---|
-| Advait | ML and Data Lead | Forecast model, honest evaluation against baselines, automated data pipeline |
-| Weng Tin | Product and Frontend Lead | Dashboard, map and the inspection-list workflow for officers |
-| Dillon | Public Health Research and Pitch Lead | Problem research, subzone risk index design, demo |
+| Name | Role |
+|---|---|
+| Advait | ML and Data Lead |
+| Weng Tin | Product and Frontend Lead |
+| Dillon | Public Health Research and Pitch Lead |
+
+Licensed under the [MIT License](LICENSE).

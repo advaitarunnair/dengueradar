@@ -51,7 +51,8 @@ export const outlookIcon = (o: Outlook) => OUTLOOK_ICON[o]
 export function Disclaimer({ className = '' }: { className?: string }) {
   return (
     <p className={`text-xs leading-relaxed text-ink-2 ${className}`}>
-      <strong>Student prototype, not an official NEA tool.</strong> The forecast is island-wide, not per subzone. The subzone
+      <strong>Student prototype, not an official NEA tool.</strong> Plans, checklists, reports and briefings are drafted by AI and must be
+      checked by an officer. The forecast is island-wide, not per subzone. The subzone
       ranking is a transparent rule-based index, not a prediction, and has not been validated against future clusters. Do not use
       it for health or operational decisions without official NEA information.
     </p>
