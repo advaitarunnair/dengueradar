@@ -26,12 +26,12 @@ export default function PlanPage() {
   const reload = useCallback(() => apiGet<PlanState>('plan').then(setState).catch((e: Error) => setError(e.message)), [])
   useEffect(() => { reload() }, [reload])
 
-  const generate = async () => {
+  const generate = async (reset = false) => {
     setRunning(true)
     setError(null)
     setSteps([{ kind: 'status', text: 'Starting the planning agent (Nemotron Ultra)' }])
     try {
-      await apiStream('plan', { action: 'generate' }, (e) => {
+      await apiStream('plan', { action: 'generate', reset }, (e) => {
         if (e.type === 'status') setSteps((s) => [...s, { kind: 'status', text: String(e.text) }])
         if (e.type === 'tool') setSteps((s) => [...s, { kind: 'tool', text: describeTool(String(e.name), String(e.args)) }])
         if (e.type === 'error') setError(String(e.error))
@@ -76,7 +76,7 @@ export default function PlanPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {record?.status !== 'confirmed' && (
-              <button onClick={generate} disabled={running}
+              <button onClick={() => generate()} disabled={running}
                 className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent-soft disabled:text-ink-3">
                 <span aria-hidden>↻</span> {running ? 'Agent is planning…' : record ? 'Regenerate' : 'Generate this week’s plan'}
               </button>
@@ -120,6 +120,15 @@ export default function PlanPage() {
               </div>
             )}
             <p className="text-sm leading-relaxed text-ink">{plan.summary}</p>
+            <p className="text-xs text-ink-2">
+              Constraints: {plan.constraints.teams.length} teams × {plan.constraints.days} days × {plan.constraints.per_day} premises a day
+              {plan.constraints.skip_inspected_last_week ? ' · skipping areas inspected last week' : ''}
+              {plan.constraints.skip_subzones.length ? ` · ${plan.constraints.skip_subzones.length} area(s) excluded` : ''}
+              {plan.constraints.notes.length ? ` · ${plan.constraints.notes.length} note(s) from the officer` : ''}
+              {record?.status !== 'confirmed' && (plan.constraints.teams.length !== 3 || plan.constraints.per_day !== 6 || plan.constraints.days !== 5 || plan.constraints.skip_subzones.length > 0 || plan.constraints.notes.length > 0 || plan.constraints.skip_inspected_last_week) && (
+                <button onClick={() => generate(true)} disabled={running} className="ml-2 text-accent underline">Reset to defaults and regenerate</button>
+              )}
+            </p>
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="rounded-full border border-line px-2.5 py-1 text-ink-2">
                 Island-wide: {plan.outlook.current_cases} cases in {weekLabel(plan.outlook.case_week)}, forecast {plan.outlook.forecast_cases} for {weekLabel(plan.outlook.forecast_week)} · {plan.outlook.outlook}

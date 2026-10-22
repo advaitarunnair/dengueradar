@@ -39,7 +39,7 @@ async function confirm(id: number, on: boolean) {
 }
 
 export const POST = handler(async (req) => {
-  const body = await readJson<{ action?: string; id?: number }>(req)
+  const body = await readJson<{ action?: string; id?: number; reset?: boolean }>(req)
   const session = sessionId(req)
   if (body.action === 'confirm' || body.action === 'unconfirm') {
     await confirm(Number(body.id), body.action === 'confirm')
@@ -47,7 +47,8 @@ export const POST = handler(async (req) => {
   }
   if (body.action !== 'generate') return Response.json({ error: 'Unknown action' }, { status: 400 })
   const { record } = await currentPlan()
-  const constraints = record?.plan.constraints ?? DEFAULT_CONSTRAINTS
+  // Regenerate keeps the officer's current constraints unless they ask to reset them.
+  const constraints = body.reset ? DEFAULT_CONSTRAINTS : record?.plan.constraints ?? DEFAULT_CONSTRAINTS
   return ndjson(async (send) => {
     const plan = await generatePlan({ session, constraints, onEvent: send })
     const saved = await savePlan(plan)
