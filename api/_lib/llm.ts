@@ -3,6 +3,8 @@
  * Server-side only: the API key never reaches the browser.
  */
 import OpenAI from 'openai'
+import type { ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionMessage } from 'openai/resources/chat/completions'
+import { checkBudget, recordUsage } from './guard.ts'
 
 export const MODELS = {
   /** Heavy reasoning: weekly plan and re-planning. */
@@ -42,4 +44,57 @@ export function stripThinking(text: string | null | undefined): string {
  */
 export function thinkingParams(thinking: boolean) {
   return { chat_template_kwargs: { enable_thinking: thinking } }
+}
+
+
+export interface CompleteOptions {
+  model: ModelKey
+  endpoint: string
+  session: string
+  messages: ChatCompletionMessageParam[]
+  maxTokens: number
+  thinking?: boolean
+  temperature?: number
+  tools?: ChatCompletionTool[]
+  json?: boolean
+}
+
+export interface Completion {
+  message: ChatCompletionMessage
+  /** Visible answer with any reasoning removed. */
+  text: string
+  usage: { prompt: number; completion: number }
+  finishReason: string | null
+}
+
+/** One guarded Nemotron call: budget check first, usage logged after, reasoning stripped. */
+export async function complete(o: CompleteOptions): Promise<Completion> {
+  const model = MODELS[o.model]
+  await checkBudget(o.session, model, o.model === 'ULTRA')
+  const r = await nebius().chat.completions.create({
+    model,
+    messages: o.messages,
+    max_tokens: o.maxTokens,
+    temperature: o.temperature ?? 0.3,
+    ...(o.tools ? { tools: o.tools, tool_choice: 'auto' as const } : {}),
+    ...(o.json ? { response_format: { type: 'json_object' as const } } : {}),
+    ...thinkingParams(o.thinking ?? false),
+  })
+  const usage = { prompt: r.usage?.prompt_tokens ?? 0, completion: r.usage?.completion_tokens ?? 0 }
+  await recordUsage(o.session, model, o.endpoint, usage.prompt, usage.completion)
+  const message = r.choices[0].message
+  return { message, text: stripThinking(message.content), usage, finishReason: r.choices[0].finish_reason }
+}
+
+/** Parse a JSON object from model text, tolerating code fences or a sentence around it. */
+export function parseJson<T>(text: string): T {
+  const fenced = text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim()
+  try {
+    return JSON.parse(fenced) as T
+  } catch {
+    const start = fenced.indexOf('{')
+    const end = fenced.lastIndexOf('}')
+    if (start >= 0 && end > start) return JSON.parse(fenced.slice(start, end + 1)) as T
+    throw new Error('Model did not return valid JSON')
+  }
 }

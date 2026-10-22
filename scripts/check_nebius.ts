@@ -1,5 +1,5 @@
 /** Confirms the configured Nemotron model IDs exist on Token Factory and answer a tiny prompt. */
-import 'dotenv/config'
+import './env.ts'
 import { MODELS, nebius, stripThinking, thinkingParams } from '../api/_lib/llm.ts'
 
 const available = new Set<string>()
