@@ -1,0 +1,22 @@
+{
+  "name": "dengueradar",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:nebius": "tsx scripts/check_nebius.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "openai": "^6.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "dotenv": "^18.0.8",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

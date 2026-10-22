@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci && npm ci --prefix web",
+  "buildCommand": "npm run build --prefix web",
+  "outputDirectory": "web/dist",
+  "devCommand": "npm run dev --prefix web -- --port $PORT",
+  "functions": {
+    "api/**/*.ts": { "includeFiles": "{web/public/data/**,data/history/**}", "maxDuration": 120 }
+  }
+}

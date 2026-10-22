@@ -5,3 +5,7 @@ __pycache__
 web/dist
 .DS_Store
 data/cache/http/
+.env
+.env.local
+.env*.local
+.vercel
