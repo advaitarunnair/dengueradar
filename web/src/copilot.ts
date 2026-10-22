@@ -43,3 +43,33 @@ export function describeTool(name: string, args: string): string {
     default: return name
   }
 }
+
+export const PREMISES_TYPE: Record<string, string> = {
+  hdb_block: 'HDB block', landed_home: 'Landed homes', condo: 'Condominium', construction_site: 'Construction site',
+  school: 'School', market: 'Market / food centre', park: 'Park',
+}
+export interface Visit {
+  team_name: string; day: number; visit_order: number; subzone_id: string; subzone: string; premises_id: number; name: string; premises_type: string
+  lat: number; lon: number; report_id: number | null; breeding_found: boolean | null; breeding_last_8_weeks: number
+}
+export interface VisitsState { epi_week: string; plan: { id: number; version: number; confirmed_at: string } | null; visits: Visit[] }
+export interface Habitat { type: string; location: string | null; breeding: boolean; count: number | null }
+export interface Inspection {
+  id: number; inspected_on: string; epi_week: string; team_name: string | null; inspector: string | null; breeding_found: boolean
+  habitats: Habitat[]; actions_taken: string | null; follow_up_needed: boolean; follow_up_due: string | null; follow_up_done: boolean; is_demo: boolean
+}
+export interface PremisesDetail {
+  premises: { id: number; code: string; name: string; premises_type: string; subzone_id: string; lat: number; lon: number; layout_notes: string | null; is_demo: boolean }
+  history: Inspection[]
+}
+export interface ChecklistItem { habitat: string; check: string; priority: 'high' | 'normal'; why: string }
+export interface ReportDraft {
+  location: string; habitats: Habitat[]; breeding_found: boolean; actions_taken: string
+  follow_up_needed: boolean; follow_up_due: string | null; summary: string; missing: string[]
+}
+export const HABITAT_TYPES = [
+  'domestic container (pail, vase, flower pot plate)', 'discarded receptacle', 'gully trap', 'scupper drain or drain',
+  'roof gutter', 'water tank', 'puddle or ground depression', 'bamboo pole holder', 'tree hole or plant axil',
+  'ornamental container or pond', 'floor slab ponding (construction)', 'lift well or basement (construction)',
+  'plastic sheet or tarpaulin', 'drum or container stack', 'other',
+]

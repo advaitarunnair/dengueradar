@@ -6,6 +6,8 @@ import { Status } from './components/ui'
 import Dashboard from './pages/Dashboard'
 import PlanPage from './pages/Plan'
 import PlanPrint from './pages/PlanPrint'
+import Inspect from './pages/Inspect'
+import InspectPremises from './pages/InspectPremises'
 
 const Model = lazy(() => import('./pages/Model'))  // keeps the chart library out of the first load
 
@@ -15,7 +17,8 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<PlanPage />} />
-          <Route path="/inspect" element={<Placeholder title="Inspect" />} />
+          <Route path="/inspect" element={<Inspect />} />
+          <Route path="/inspect/:id" element={<InspectPremises />} />
           <Route path="/review" element={<Placeholder title="Review" />} />
           <Route path="/map" element={<Dashboard />} />
           <Route path="/print/:id" element={<PlanPrint />} />
