@@ -34,3 +34,12 @@ export function stripThinking(text: string | null | undefined): string {
     .replace(/^[\s\S]*?<\/think>/i, '')
     .trim()
 }
+
+/**
+ * Nemotron 3 models reason by default and return it in a separate `reasoning_content` field, which costs
+ * tokens. Reasoning is switched off unless a caller needs it (only the Ultra planning calls do).
+ * Reasoning text is never returned to users.
+ */
+export function thinkingParams(thinking: boolean) {
+  return { chat_template_kwargs: { enable_thinking: thinking } }
+}
