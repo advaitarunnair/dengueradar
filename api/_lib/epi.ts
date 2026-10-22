@@ -14,3 +14,15 @@ export function epiWeekOf(date: Date): string {
 export function sgToday(): string {
   return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
 }
+
+/** The Sunday that starts an epi week label like 2026-W42. */
+export function epiWeekStart(label: string): Date {
+  const [y, w] = label.split('-W').map(Number)
+  const jan4 = new Date(Date.UTC(y, 0, 4))
+  const week1 = new Date(jan4); week1.setUTCDate(jan4.getUTCDate() - jan4.getUTCDay())
+  return new Date(week1.getTime() + (w - 1) * 7 * 86400000)
+}
+
+export function previousEpiWeek(label: string): string {
+  return epiWeekOf(new Date(epiWeekStart(label).getTime() - 7 * 86400000))
+}

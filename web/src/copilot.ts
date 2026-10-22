@@ -73,3 +73,20 @@ export const HABITAT_TYPES = [
   'ornamental container or pond', 'floor slab ponding (construction)', 'lift well or basement (construction)',
   'plastic sheet or tarpaulin', 'drum or container stack', 'other',
 ]
+
+export interface WeekTotals { epi_week: string; inspections: number; with_breeding: number; premises: number }
+export interface ReviewStats {
+  week: string; previous_week: string; today: string; this_week: WeekTotals; last_week: WeekTotals
+  breeding_habitats: { this_week: { habitat: string; breeding_sites: number }[]; last_week: { habitat: string; breeding_sites: number }[] }
+  teams: { team: string; inspections: number; with_breeding: number }[]
+  areas_with_breeding: { subzone_id: string; subzone: string; with_breeding: number; inspections: number }[]
+  overdue_follow_ups: { total: number; oldest: { id: number; name: string; subzone: string; due: string; days_overdue: number; team_name: string | null }[] }
+  reinspect: { id: number; name: string; subzone: string; due: string | null; team_name: string | null }[]
+}
+export interface Offender {
+  premises_id: number; name: string; premises_type: string; subzone_id: string; subzone: string; weeks_with_breeding: number
+  breeding_weeks: string[]; max_habitats_one_visit: number; habitats: string | null; last_breeding: string; visits: number
+  level: 'persistent' | 'repeat' | 'multiple'; escalation: string
+}
+export interface ReviewState { stats: ReviewStats; offenders: Offender[]; offenders_total: number }
+export interface Briefing { sections: { title: string; points: string[] }[]; removed: string[]; cached: boolean }

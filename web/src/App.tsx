@@ -8,6 +8,7 @@ import PlanPage from './pages/Plan'
 import PlanPrint from './pages/PlanPrint'
 import Inspect from './pages/Inspect'
 import InspectPremises from './pages/InspectPremises'
+import Review from './pages/Review'
 
 const Model = lazy(() => import('./pages/Model'))  // keeps the chart library out of the first load
 
@@ -19,7 +20,7 @@ export default function App() {
           <Route path="/" element={<PlanPage />} />
           <Route path="/inspect" element={<Inspect />} />
           <Route path="/inspect/:id" element={<InspectPremises />} />
-          <Route path="/review" element={<Placeholder title="Review" />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/map" element={<Dashboard />} />
           <Route path="/print/:id" element={<PlanPrint />} />
           <Route path="/model" element={<Suspense fallback={<Status loading error={null} />}><Model /></Suspense>} />
@@ -30,6 +31,3 @@ export default function App() {
   )
 }
 
-function Placeholder({ title }: { title: string }) {
-  return <p className="rounded-xl border border-line bg-white p-6 text-sm text-ink-2">{title} is being built.</p>
-}
