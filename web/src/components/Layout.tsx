@@ -6,7 +6,13 @@ import RefreshButton from './RefreshButton'
 import { Disclaimer } from './ui'
 
 const link = ({ isActive }: { isActive: boolean }) =>
-  `rounded-md px-3 py-1.5 text-sm font-medium ${isActive ? 'bg-accent text-white' : 'text-ink-2 hover:bg-accent-soft hover:text-accent'}`
+  `rounded-md px-2.5 py-1.5 text-sm font-medium ${isActive ? 'bg-accent-soft text-accent' : 'text-ink-2 hover:bg-accent-soft hover:text-accent'}`
+
+const STEPS = [
+  { to: '/', label: 'Plan', hint: 'Draft and confirm the week' },
+  { to: '/inspect', label: 'Inspect', hint: 'On site: checklist and reports' },
+  { to: '/review', label: 'Review', hint: 'Weekly summary and repeat sites' },
+]
 
 export default function Layout() {
   const { data: meta } = useData<Meta>('meta.json')
@@ -15,8 +21,8 @@ export default function Layout() {
       <header className="no-print border-b border-line bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3">
           <div>
-            <p className="text-xl font-bold tracking-tight text-accent">DengueRadar</p>
-            <p className="text-sm text-ink-2">Weekly dengue inspection priorities for Singapore</p>
+            <p className="text-xl font-bold tracking-tight text-accent">DengueRadar <span className="font-semibold text-ink">Copilot</span></p>
+            <p className="text-sm text-ink-2">An AI agent that runs a dengue inspection team’s week</p>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {meta && (
@@ -25,16 +31,32 @@ export default function Layout() {
               </p>
             )}
             <RefreshButton current={meta?.generated_at} />
-            <nav className="flex gap-1" aria-label="Main">
-              <NavLink to="/" end className={link}>Dashboard</NavLink>
+            <nav className="flex gap-1" aria-label="Data and method">
+              <NavLink to="/map" className={link}>Risk map</NavLink>
               <NavLink to="/model" className={link}>Model</NavLink>
               <NavLink to="/about" className={link}>About</NavLink>
             </nav>
           </div>
         </div>
+        <nav aria-label="Workflow" className="border-t border-line">
+          <ol className="mx-auto grid max-w-7xl grid-cols-3 px-2 sm:px-4">
+            {STEPS.map((s, i) => (
+              <li key={s.to}>
+                <NavLink to={s.to} end className={({ isActive }) =>
+                  `flex items-center gap-2 border-b-2 px-2 py-2.5 sm:px-3 ${isActive ? 'border-accent text-accent' : 'border-transparent text-ink-2 hover:text-accent'}`}>
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current text-xs font-semibold">{i + 1}</span>
+                  <span>
+                    <span className="block text-sm font-semibold">{s.label}</span>
+                    <span className="hidden text-xs text-ink-3 sm:block">{s.hint}</span>
+                  </span>
+                </NavLink>
+              </li>
+            ))}
+          </ol>
+        </nav>
         <div className="border-t border-line bg-accent-soft">
           <p className="mx-auto max-w-7xl px-4 py-1.5 text-xs text-ink">
-            <strong>Student prototype.</strong> Not an official NEA tool. Island-wide forecast; rule-based subzone index.
+            <strong>Student prototype.</strong> Not an official NEA tool. Island-wide forecast; rule-based subzone index; premises and inspection records are demo data.
           </p>
         </div>
       </header>

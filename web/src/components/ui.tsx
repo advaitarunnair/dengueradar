@@ -69,3 +69,12 @@ export function RankChange({ change }: { change: number | null }) {
     </span>
   )
 }
+
+/** Marks anything built on the prototype's fictional premises and inspection records. */
+export function DemoBadge({ children = 'Demo data' }: { children?: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-ink-3 px-2.5 py-1 text-xs text-ink-2" title="Fictional premises and inspection records, placed inside real subzones, for demonstrating the Copilot. Forecasts and rankings use real data.">
+      <span aria-hidden>◌</span> {children}
+    </span>
+  )
+}

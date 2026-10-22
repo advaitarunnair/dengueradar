@@ -4,7 +4,10 @@ import { sql } from './db.ts'
 export interface Source { title: string; url: string; snippet: string; published: string | null }
 
 /** Social media and video pages are dropped: the agent should cite news and official sources. */
-const BLOCKED = /(^|\.)(instagram|facebook|tiktok|x|twitter|reddit|youtube|threads|linkedin)\.com$/i
+const BLOCKED = /(^|\.)(instagram|facebook|tiktok|x|twitter|reddit|youtube|threads|linkedin)\.com$|^(play\.google|apps\.apple)\.com$/i
+/** The news index is global, so keep only results that are about Singapore. */
+const aboutSingapore = (x: { title: string; url: string; content: string }) =>
+  /singapore|\bnea\b|\bsg\b/i.test(`${x.title} ${x.content}`) || /\.sg(\/|$)/.test(new URL(x.url).hostname + '/')
 
 export async function searchRecentContext(query: string): Promise<Source[]> {
   if (!process.env.TAVILY_API_KEY) return []
@@ -22,7 +25,7 @@ export async function searchRecentContext(query: string): Promise<Source[]> {
   const body = (await r.json()) as { results: { title: string; url: string; content: string; published_date?: string }[] }
   const seen = new Set<string>()
   const sources = body.results
-    .filter((x) => x.title && x.url && !BLOCKED.test(new URL(x.url).hostname))
+    .filter((x) => x.title && x.url && !BLOCKED.test(new URL(x.url).hostname) && aboutSingapore(x))
     .filter((x) => !seen.has(x.url) && seen.add(x.url))
     .slice(0, 5)
     .map((x) => ({ title: x.title.trim(), url: x.url, snippet: x.content.slice(0, 400), published: x.published_date ?? null }))

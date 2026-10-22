@@ -70,7 +70,7 @@ export interface Completion {
 /** One guarded Nemotron call: budget check first, usage logged after, reasoning stripped. */
 export async function complete(o: CompleteOptions): Promise<Completion> {
   const model = MODELS[o.model]
-  await checkBudget(o.session, model, o.model === 'ULTRA')
+  await checkBudget(o.session)
   const r = await nebius().chat.completions.create({
     model,
     messages: o.messages,
