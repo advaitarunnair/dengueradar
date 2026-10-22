@@ -9,3 +9,5 @@ data/cache/http/
 .env.local
 .env*.local
 .vercel
+.env*
+!.env.example
