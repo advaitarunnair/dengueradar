@@ -17,7 +17,7 @@ export default function TeamCard({ plan, team, onSelect, selectedId }: { plan: P
           <span className="text-xs text-ink-2">{team.regions.map(titleCase).join(' + ') || 'No areas'}</span>
         </div>
         <div className="min-w-40 text-right text-xs text-ink-2">
-          <p><strong className="text-ink">{team.premises}</strong> of {team.capacity} premises · {team.days.length} days · {km.toFixed(1)} km walking between stops</p>
+          <p><strong className="text-ink">{team.premises}</strong> of {team.capacity} premises · {team.days.length} days · {km.toFixed(1)} km between stops</p>
           <div className="mt-1 h-1.5 rounded-full bg-line" role="img" aria-label={`${pct}% of capacity used`}>
             <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: color }} />
           </div>

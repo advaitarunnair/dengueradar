@@ -39,8 +39,10 @@ export interface Plan {
   summary: string; areas: PlanArea[]; teams: PlanTeam[]
   context: { id: string; title: string; url: string; published: string | null; note: string }[]
   outlook: { current_cases: number; forecast_cases: number; outlook: string; case_week: string; forecast_week: string }
-  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; replaced: { subzone: string; numbers: number[] }[] }
+  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; replaced: { subzone: string; numbers: number[] }[]; removed_sentences: string[] }
   agent: { tool_calls: { name: string; args: string }[]; tokens: number; ms: number }
+  /** Set on re-plans: what changed versus the previous version (computed in code). */
+  changes?: { added: string[]; removed: string[]; moved: { subzone: string; from: string; to: string }[] }
 }
 
 export type AgentEvent = { type: 'status'; text: string } | { type: 'tool'; name: string; args: string }
@@ -300,13 +302,18 @@ export async function generatePlan(opts: {
   for (const s of runner.sources) ledger.add(s.snippet + ' ' + s.title)
   // Totals the summary might state correctly, computed by code.
   ledger.add({ areas: areas.length, premises: areas.reduce((t, a) => t + a.premises, 0), regions: new Set(areas.map((a) => a.region)).size })
-  const unsupported = ledger.unsupported(written)
+  // Summary sentences with a number we cannot verify are removed rather than shown with a warning.
+  const sentences = (parsed.summary ?? '').split(/(?<=[.!?])\s+/).filter(Boolean)
+  const keep = sentences.filter((x) => !ledger.unsupported(x).length)
+  const removedSentences = sentences.filter((x) => ledger.unsupported(x).length)
+  parsed.summary = keep.join(' ')
+  const unsupported = ledger.unsupported([parsed.summary, ...context.map((x) => x.note)].join('\n'))
 
   return {
     epi_week: meta.epi_week, generated_at: new Date().toISOString(), model: MODELS.ULTRA, constraints: c,
     summary: parsed.summary ?? '', areas, teams, context,
     outlook: { current_cases: meta.current_cases, forecast_cases: meta.forecast_cases, outlook: meta.outlook, case_week: meta.case_week, forecast_week: meta.forecast_week },
-    checks: { numbers_checked: ((written + areaText).match(/\d[\d,.]*/g) ?? []).length, unsupported, dropped, replaced },
+    checks: { numbers_checked: ((written + areaText).match(/\d[\d,.]*/g) ?? []).length, unsupported, dropped, replaced, removed_sentences: removedSentences },
     agent: { tool_calls: toolCalls, tokens, ms: Date.now() - t0 },
   }
 }

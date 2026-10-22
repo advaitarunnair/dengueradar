@@ -83,7 +83,7 @@ export function rankedAreas(): Area[] {
 export interface Snapshot { epi_week: string; outlook: string; subzones: Record<string, { rank: number; band: string; risk: number; priority: number }> }
 export function snapshots(): Snapshot[] {
   try {
-    return readdirSync(HISTORY).filter((f) => f.endsWith('.json')).sort()
+    return readdirSync(HISTORY).filter((f) => /^\d{4}-\d{2}\.json$/.test(f)).sort()
       .map((f) => JSON.parse(readFileSync(join(HISTORY, f), 'utf8')) as Snapshot)
   } catch {
     return []

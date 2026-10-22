@@ -308,7 +308,7 @@ def reason(r: pd.Series) -> str:
 def week_on_week(scored: pd.DataFrame, week: str) -> tuple[pd.DataFrame, str | None]:
     """rank_change (positive = moved up the list) and is_new_in_top20 against the previous snapshot."""
     out = scored.copy()
-    previous = sorted(p for p in HISTORY.glob("*.json") if p.stem < week.replace("-W", "-"))
+    previous = sorted(p for p in HISTORY.glob("20*-*.json") if p.stem < week.replace("-W", "-"))
     out["rank_change"] = None
     out["is_new_in_top20"] = False
     if not previous:

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AgentTrace, { stepsFromToolCalls, type TraceStep } from '../components/plan/AgentTrace'
+import CopilotChat from '../components/plan/CopilotChat'
 import PlanMap from '../components/plan/PlanMap'
 import TeamCard from '../components/plan/TeamCard'
 import TrustStrip from '../components/plan/TrustStrip'
 import { BandBadge, Card, DemoBadge, Status } from '../components/ui'
 import { describeTool, type PlanRecord, type PlanState } from '../copilot'
-import { apiGet, apiStream } from '../lib/api'
+import { apiGet, apiPost, apiStream } from '../lib/api'
 import { useData } from '../lib/data'
 import { dateLabel, titleCase, weekLabel } from '../lib/format'
 import type { ScoresCollection } from '../types'
@@ -43,6 +45,16 @@ export default function PlanPage() {
     }
   }
 
+  const setConfirmed = async (on: boolean) => {
+    if (!state?.record) return
+    setError(null)
+    try {
+      setState(await apiPost<PlanState>('plan', { action: on ? 'confirm' : 'unconfirm', id: state.record.id }))
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
   if (!state) return <Status loading={!error} error={error} />
   const record = state.record
   const plan = record?.plan
@@ -62,10 +74,26 @@ export default function PlanPage() {
               </p>
             )}
           </div>
-          <button onClick={generate} disabled={running}
-            className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent-soft disabled:text-ink-3">
-            <span aria-hidden>↻</span> {running ? 'Agent is planning…' : record ? 'Regenerate plan' : 'Generate this week’s plan'}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {record?.status !== 'confirmed' && (
+              <button onClick={generate} disabled={running}
+                className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent-soft disabled:text-ink-3">
+                <span aria-hidden>↻</span> {running ? 'Agent is planning…' : record ? 'Regenerate' : 'Generate this week’s plan'}
+              </button>
+            )}
+            {record && !running && (
+              <>
+                <Link to={`/print/${record.id}`} className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent-soft">
+                  <span aria-hidden>🖨</span> Team sheets
+                </Link>
+                {record.status === 'confirmed' ? (
+                  <button onClick={() => setConfirmed(false)} className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink-2 hover:bg-accent-soft">Unconfirm</button>
+                ) : (
+                  <button onClick={() => setConfirmed(true)} className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:opacity-90">✓ Confirm and assign to teams</button>
+                )}
+              </>
+            )}
+          </div>
         </div>
         {error && <p role="alert" className="mt-3 rounded-md border border-line bg-accent-soft px-3 py-2 text-sm text-ink">⚠ {error}</p>}
         {running && (
@@ -76,6 +104,21 @@ export default function PlanPage() {
         )}
         {plan && !running && (
           <div className="mt-4 space-y-3">
+            {record?.status === 'confirmed' && (
+              <p className="rounded-md border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
+                ✓ Confirmed {record.confirmed_at ? timeLabel(record.confirmed_at) : ''}. Visits are assigned to teams: inspectors see them in <Link to="/inspect" className="font-medium text-accent underline">Inspect</Link>.
+              </p>
+            )}
+            {plan.changes && (plan.changes.added.length + plan.changes.removed.length + plan.changes.moved.length > 0) && (
+              <div className="rounded-md border border-line px-3 py-2 text-sm">
+                <p className="font-medium text-ink">What changed in version {record?.version}</p>
+                <ul className="mt-1 space-y-0.5 text-ink-2">
+                  {plan.changes.added.length > 0 && <li><span aria-hidden>＋</span> Added: {plan.changes.added.join(', ')}</li>}
+                  {plan.changes.removed.length > 0 && <li><span aria-hidden>－</span> Removed: {plan.changes.removed.join(', ')}</li>}
+                  {plan.changes.moved.map((m) => <li key={m.subzone}><span aria-hidden>⇄</span> {m.subzone}: {m.from} → {m.to}</li>)}
+                </ul>
+              </div>
+            )}
             <p className="text-sm leading-relaxed text-ink">{plan.summary}</p>
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="rounded-full border border-line px-2.5 py-1 text-ink-2">
@@ -85,6 +128,7 @@ export default function PlanPage() {
                 <span className="rounded-full border border-line px-2.5 py-1 text-ink-2" title="Every number shown was checked against DengueRadar data; each area's reason only against that area's own data.">
                   ✓ All {plan.checks.numbers_checked} numbers checked against our data
                   {plan.checks.replaced?.length ? ` · ${plan.checks.replaced.length} reason(s) replaced with facts` : ''}
+                  {plan.checks.removed_sentences?.length ? ` · ${plan.checks.removed_sentences.length} unverifiable sentence(s) removed` : ''}
                 </span>
               ) : (
                 <span className="rounded-full border border-line bg-accent-soft px-2.5 py-1 text-ink">
@@ -102,7 +146,7 @@ export default function PlanPage() {
       </Card>
 
       {plan && !running && (
-        <div className="grid gap-5 lg:grid-cols-[1fr_400px]">
+        <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
           <div className="space-y-4">
             {plan.teams.map((t) => <TeamCard key={t.name} plan={plan} team={t} onSelect={setSelectedId} selectedId={selectedId} />)}
             {state.candidates.length > 0 && (
@@ -118,7 +162,8 @@ export default function PlanPage() {
               </Card>
             )}
           </div>
-          <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+          <div className="space-y-4">
+            <CopilotChat state={state} onPlan={(r) => setState((st) => (st ? { ...st, record: r } : st))} onDone={reload} />
             <Card title="Plan map">
               {scores.data ? <PlanMap plan={plan} scores={scores.data} selectedId={selectedId} onSelect={setSelectedId} /> : <Status loading={!scores.error} error={scores.error} />}
               <p className="mt-2 text-xs text-ink-2">Shaded: planned subzones by team. Dots and lines: visiting order (nearest neighbour), solid and dashed lines alternate by day.</p>

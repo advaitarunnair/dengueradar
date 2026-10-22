@@ -16,7 +16,7 @@ export interface Plan {
   summary: string; areas: PlanArea[]; teams: PlanTeam[]
   context: { id: string; title: string; url: string; published: string | null; note: string }[]
   outlook: { current_cases: number; forecast_cases: number; outlook: string; case_week: string; forecast_week: string }
-  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; replaced?: { subzone: string; numbers: number[] }[] }
+  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; replaced?: { subzone: string; numbers: number[] }[]; removed_sentences?: string[] }
   agent: { tool_calls: { name: string; args: string }[]; tokens: number; ms: number }
   changes?: { added: string[]; removed: string[]; moved: { subzone: string; from: string; to: string }[] }
 }
