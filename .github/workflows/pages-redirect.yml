@@ -1,0 +1,34 @@
+name: Point GitHub Pages to Vercel
+
+# The app moved to Vercel (it needs serverless API routes). This publishes a small redirect page at the
+# old GitHub Pages address so existing links keep working.
+on:
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  redirect:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - run: |
+          mkdir site
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8">
+          <meta http-equiv="refresh" content="0; url=https://dengueradar.vercel.app/">
+          <link rel="canonical" href="https://dengueradar.vercel.app/">
+          <title>DengueRadar Copilot has moved</title></head>
+          <body><p>DengueRadar Copilot has moved to <a href="https://dengueradar.vercel.app/">dengueradar.vercel.app</a>.</p></body></html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
