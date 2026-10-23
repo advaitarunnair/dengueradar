@@ -1,7 +1,7 @@
 {
- "new_clusters": 1,
+ "new_clusters": 2,
  "in_high_prior_week": 0,
- "in_high_or_elevated_prior_week": 0,
+ "in_high_or_elevated_prior_week": 1,
  "weeks": [
   "2026-W40"
  ],
@@ -14,6 +14,14 @@
    "subzone_id": "outram-chinatown",
    "snapshot_week": "2026-W40",
    "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-10-23",
+   "locality": "Ang Mo Kio Ave 6 (Blk 700A, 712)",
+   "cases": 2,
+   "subzone_id": "ang-mo-kio-ang-mo-kio-town-centre",
+   "snapshot_week": "2026-W41",
+   "band_week_before": "Elevated"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

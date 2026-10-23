@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-22T08:18:07+08:00",
+ "generated_at": "2026-10-23T08:14:30+08:00",
  "epi_week": "2026-W42",
  "current_cases": 60,
  "case_week": "2026-W41",
@@ -31,13 +31,13 @@
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 7,
- "cluster_cases": 143,
+ "active_clusters": 8,
+ "cluster_cases": 146,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-10-21T23:36:26+08:00",
+  "updated_at": "2026-10-22T23:53:40+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-21",
+  "window_end": "2026-10-22",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S900",
     "name": "Seletar Meteorological Station",
-    "missing_days": 22
+    "missing_days": 21
    }
   ],
   "rain_stations_no_data": 1,

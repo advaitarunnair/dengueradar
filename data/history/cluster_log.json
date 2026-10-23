@@ -106,5 +106,14 @@
   "x": 28952.9,
   "y": 28820.2,
   "subzone_id": "outram-chinatown"
+ },
+ {
+  "first_seen": "2026-10-23",
+  "epi_week": "2026-W42",
+  "locality": "Ang Mo Kio Ave 6 (Blk 700A, 712)",
+  "cases": 2,
+  "x": 29499.4,
+  "y": 39243.7,
+  "subzone_id": "ang-mo-kio-ang-mo-kio-town-centre"
  }
 ]
