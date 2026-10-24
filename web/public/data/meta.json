@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-10-24T08:07:44+08:00",
- "epi_week": "2026-W42",
+ "generated_at": "2026-10-25T07:51:02+08:00",
+ "epi_week": "2026-W43",
  "current_cases": 60,
  "case_week": "2026-W41",
  "forecast_cases": 62,
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-23",
+  "window_end": "2026-10-24",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S900",
     "name": "Seletar Meteorological Station",
-    "missing_days": 20
+    "missing_days": 19
    }
   ],
   "rain_stations_no_data": 1,
@@ -91,7 +91,7 @@
   "eligible_subzones": 241,
   "total_subzones": 332
  },
- "previous_week": "2026-W41",
+ "previous_week": "2026-W42",
  "sources": [
   {
    "name": "NEA Dengue Clusters map feed",
