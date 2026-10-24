@@ -115,5 +115,14 @@
   "x": 29499.4,
   "y": 39243.7,
   "subzone_id": "ang-mo-kio-ang-mo-kio-town-centre"
+ },
+ {
+  "first_seen": "2026-10-24",
+  "epi_week": "2026-W42",
+  "locality": "Penjuru Pl, Walk",
+  "cases": 2,
+  "x": 16698.2,
+  "y": 33247.8,
+  "subzone_id": "jurong-east-jurong-river"
  }
 ]

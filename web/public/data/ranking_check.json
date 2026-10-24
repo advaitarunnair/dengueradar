@@ -1,5 +1,5 @@
 {
- "new_clusters": 2,
+ "new_clusters": 3,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 1,
  "weeks": [
@@ -22,6 +22,14 @@
    "subzone_id": "ang-mo-kio-ang-mo-kio-town-centre",
    "snapshot_week": "2026-W41",
    "band_week_before": "Elevated"
+  },
+  {
+   "first_seen": "2026-10-24",
+   "locality": "Penjuru Pl, Walk",
+   "cases": 2,
+   "subzone_id": "jurong-east-jurong-river",
+   "snapshot_week": "2026-W41",
+   "band_week_before": null
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
