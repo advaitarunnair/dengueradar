@@ -124,5 +124,14 @@
   "x": 16698.2,
   "y": 33247.8,
   "subzone_id": "jurong-east-jurong-river"
+ },
+ {
+  "first_seen": "2026-10-27",
+  "epi_week": "2026-W43",
+  "locality": "Toh Guan Rd East",
+  "cases": 2,
+  "x": 18959.3,
+  "y": 35366.9,
+  "subzone_id": "clementi-toh-tuck"
  }
 ]

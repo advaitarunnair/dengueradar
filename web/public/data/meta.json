@@ -1,56 +1,56 @@
 {
- "generated_at": "2026-10-26T07:40:06+08:00",
+ "generated_at": "2026-10-27T08:59:15+08:00",
  "epi_week": "2026-W43",
- "current_cases": 60,
- "case_week": "2026-W41",
- "forecast_cases": 62,
- "forecast_week": "2026-W45",
- "pct_change": 2.7,
+ "current_cases": 61,
+ "case_week": "2026-W42",
+ "forecast_cases": 61,
+ "forecast_week": "2026-W46",
+ "pct_change": -0.4,
  "outlook": "Stable",
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "60",
+   "value": "61",
    "direction": "down",
-   "contribution": -0.581,
-   "text": "Cases this week (60) are below typical levels, pulling the forecast down"
-  },
-  {
-   "label": "Cases 1 week ago",
-   "value": "79",
-   "direction": "down",
-   "contribution": -0.1299,
-   "text": "Cases 1 week ago (79) are below typical levels, pulling the forecast down"
+   "contribution": -0.5971,
+   "text": "Cases this week (61) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Average cases over the last 4 weeks",
-   "value": "72",
+   "value": "67",
    "direction": "down",
-   "contribution": -0.1297,
-   "text": "Average cases over the last 4 weeks (72) is below typical levels, pulling the forecast down"
+   "contribution": -0.2015,
+   "text": "Average cases over the last 4 weeks (67) is below typical levels, pulling the forecast down"
+  },
+  {
+   "label": "Cases 1 week ago",
+   "value": "60",
+   "direction": "down",
+   "contribution": -0.1458,
+   "text": "Cases 1 week ago (60) are below typical levels, pulling the forecast down"
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 9,
- "cluster_cases": 148,
+ "active_clusters": 11,
+ "cluster_cases": 154,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-10-24T00:03:36+08:00",
+  "updated_at": "2026-10-27T00:34:22+08:00",
   "fallback_used": false,
   "note": null
  },
  "population_reference_year": 2025,
  "case_data": {
-  "last_week": "2026-W41",
+  "last_week": "2026-W42",
   "bulletin_last_week": "2022-W52",
   "recent_source": "nea_page",
   "nea_fetch_ok": true,
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-25",
+  "window_end": "2026-10-26",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,7 +58,7 @@
    {
     "id": "S900",
     "name": "Seletar Meteorological Station",
-    "missing_days": 18
+    "missing_days": 17
    }
   ],
   "rain_stations_no_data": 1,

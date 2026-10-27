@@ -1,5 +1,5 @@
 {
- "new_clusters": 3,
+ "new_clusters": 4,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 1,
  "weeks": [
@@ -29,6 +29,14 @@
    "cases": 2,
    "subzone_id": "jurong-east-jurong-river",
    "snapshot_week": "2026-W41",
+   "band_week_before": null
+  },
+  {
+   "first_seen": "2026-10-27",
+   "locality": "Toh Guan Rd East",
+   "cases": 2,
+   "subzone_id": "clementi-toh-tuck",
+   "snapshot_week": "2026-W42",
    "band_week_before": null
   }
  ],
