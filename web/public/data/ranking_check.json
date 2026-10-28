@@ -1,5 +1,5 @@
 {
- "new_clusters": 4,
+ "new_clusters": 6,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 1,
  "weeks": [
@@ -38,6 +38,22 @@
    "subzone_id": "clementi-toh-tuck",
    "snapshot_week": "2026-W42",
    "band_week_before": null
+  },
+  {
+   "first_seen": "2026-10-28",
+   "locality": "Loyang Ave (Loyang Valley)",
+   "cases": 2,
+   "subzone_id": "pasir-ris-loyang-east",
+   "snapshot_week": "2026-W42",
+   "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-10-28",
+   "locality": "Yishun Ave 11 (Blk 415) / Yishun Ring Rd (Blk 356)",
+   "cases": 2,
+   "subzone_id": "yishun-yishun-east",
+   "snapshot_week": "2026-W42",
+   "band_week_before": "Low"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

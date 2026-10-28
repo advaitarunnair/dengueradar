@@ -133,5 +133,23 @@
   "x": 18959.3,
   "y": 35366.9,
   "subzone_id": "clementi-toh-tuck"
+ },
+ {
+  "first_seen": "2026-10-28",
+  "epi_week": "2026-W43",
+  "locality": "Loyang Ave (Loyang Valley)",
+  "cases": 2,
+  "x": 43278.1,
+  "y": 38932.0,
+  "subzone_id": "pasir-ris-loyang-east"
+ },
+ {
+  "first_seen": "2026-10-28",
+  "epi_week": "2026-W43",
+  "locality": "Yishun Ave 11 (Blk 415) / Yishun Ring Rd (Blk 356)",
+  "cases": 2,
+  "x": 29412.7,
+  "y": 45222.4,
+  "subzone_id": "yishun-yishun-east"
  }
 ]
