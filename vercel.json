@@ -6,6 +6,15 @@
   "outputDirectory": "web/dist",
   "devCommand": "npm run dev --prefix web -- --port $PORT",
   "functions": {
-    "api/**/*.ts": { "includeFiles": "{web/public/data/**,data/history/**}", "maxDuration": 120 }
-  }
+    "api/**/*.ts": {
+      "includeFiles": "{web/public/data/**,data/history/**}",
+      "maxDuration": 120
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/weekly-plan",
+      "schedule": "30 22 * * *"
+    }
+  ]
 }

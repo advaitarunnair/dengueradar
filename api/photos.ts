@@ -1,6 +1,6 @@
 /**
  * POST /api/photos { premises_id, image: data URL, lat?, lon?, taken_at? } -> VL classification, stored
- * GET  /api/photos?premises=ID -> photo metadata;  GET /api/photos?id=ID -> the image itself
+ * GET  /api/photos?premises=ID -> photo metadata;  GET /api/photos?id=ID&s=SESSION -> the image itself (an img tag can't send the session header)
  */
 import { sql } from './_lib/db.ts'
 import { sessionId } from './_lib/guard.ts'
@@ -10,13 +10,13 @@ import { classifyAndStore, photosFor } from './_lib/photos.ts'
 export const GET = handler(async (req) => {
   const q = new URL(req.url).searchParams
   if (q.get('id')) {
-    const rows = (await sql()`select mime, data from photos where id = ${Number(q.get('id'))}`) as { mime: string; data: Uint8Array | string }[]
+    const rows = (await sql()`select mime, data from photos where id = ${Number(q.get('id'))} and session_id = ${q.get('s') ?? sessionId(req)}`) as { mime: string; data: Uint8Array | string }[]
     if (!rows.length) return new Response('Not found', { status: 404 })
     const d = rows[0].data
     const bytes = typeof d === 'string' ? Buffer.from(d.replace(/^\\x/, ''), 'hex') : Buffer.from(d)
     return new Response(bytes, { headers: { 'content-type': rows[0].mime, 'cache-control': 'private, max-age=86400' } })
   }
-  return Response.json({ photos: await photosFor(Number(q.get('premises'))) })
+  return Response.json({ photos: await photosFor(Number(q.get('premises')), sessionId(req)) })
 })
 
 export const POST = handler(async (req) => {

@@ -10,9 +10,23 @@ export function epiWeekOf(date: Date): string {
   return `${year}-W${String(week).padStart(2, '0')}`
 }
 
-/** Today's date in Singapore as YYYY-MM-DD. */
+/**
+ * Today's date in Singapore as YYYY-MM-DD. DEMO_DATE overrides it for "as of" testing, but never in
+ * production. Only dates move: rankings, clusters and the forecast stay the latest real data.
+ */
 export function sgToday(): string {
-  return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
+  const override = dateOverride()
+  return override ?? new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
+}
+
+export function dateOverride(): string | null {
+  const d = process.env.DEMO_DATE
+  return d && process.env.VERCEL_ENV !== 'production' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null
+}
+
+/** The epi week plans, demo data and reviews belong to. */
+export function currentWeek(): string {
+  return epiWeekOf(new Date(sgToday()))
 }
 
 /** The Sunday that starts an epi week label like 2026-W42. */

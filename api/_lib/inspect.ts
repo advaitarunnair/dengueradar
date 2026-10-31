@@ -4,6 +4,7 @@
  */
 import { sql } from './db.ts'
 import { epiWeekOf, sgToday } from './epi.ts'
+import { LimitError } from './guard.ts'
 import { complete, parseJson } from './llm.ts'
 
 export const HABITATS = [
@@ -20,23 +21,39 @@ export interface InspectionRow {
   actions_taken: string | null; follow_up_needed: boolean; follow_up_due: string | null; follow_up_done: boolean; is_demo: boolean
 }
 
-export async function premisesWithHistory(id: number) {
+/** A premises and its history: demo records plus this visitor's own reports, never other visitors'. */
+export async function premisesWithHistory(id: number, session: string) {
   const db = sql()
   const [p] = (await db`select * from premises where id = ${id}`) as Premises[]
   if (!p) return null
   const history = (await db`select id, inspected_on::text, epi_week, team_name, inspector, breeding_found, habitats, actions_taken,
       follow_up_needed, follow_up_due::text, follow_up_done, is_demo
-    from inspections where premises_id = ${id} order by inspected_on desc, id desc limit 8`) as InspectionRow[]
+    from inspections where premises_id = ${id} and (is_demo or session_id = ${session}) order by inspected_on desc, id desc limit 8`) as InspectionRow[]
   return { premises: p, history }
 }
 
 export interface ChecklistItem { habitat: string; check: string; priority: 'high' | 'normal'; why: string }
 
-export async function checklist(session: string, premisesId: number, refresh = false): Promise<{ items: ChecklistItem[]; cached: boolean }> {
-  const data = await premisesWithHistory(premisesId)
+/** Used when the AI budget is spent: a plain checklist for the premises type, labelled as generic in the UI. */
+function genericChecklist(type: string): ChecklistItem[] {
+  const common = ['gully trap', 'roof gutter', 'discarded receptacle', 'puddle or ground depression']
+  const extra: Record<string, string[]> = {
+    hdb_block: ['scupper drain or drain', 'bamboo pole holder', 'domestic container (pail, vase, flower pot plate)'],
+    landed_home: ['domestic container (pail, vase, flower pot plate)', 'ornamental container or pond'],
+    condo: ['ornamental container or pond', 'water tank'],
+    construction_site: ['floor slab ponding (construction)', 'lift well or basement (construction)', 'plastic sheet or tarpaulin', 'drum or container stack'],
+    school: ['tree hole or plant axil', 'scupper drain or drain'],
+    market: ['scupper drain or drain', 'drum or container stack'],
+    park: ['tree hole or plant axil', 'scupper drain or drain'],
+  }
+  return [...(extra[type] ?? []), ...common].map((habitat) => ({ habitat, check: 'Look for standing water and larvae', priority: 'normal' as const, why: 'Common habitat for this type of premises' }))
+}
+
+export async function checklist(session: string, premisesId: number, refresh = false): Promise<{ items: ChecklistItem[]; cached: boolean; notice?: string }> {
+  const data = await premisesWithHistory(premisesId, session)
   if (!data) throw new Error('Premises not found')
   const db = sql()
-  const key = `checklist:${premisesId}:${data.history[0]?.id ?? 0}`
+  const key = `checklist:${premisesId}:${data.history[0]?.inspected_on ?? 'none'}:${data.history[0]?.breeding_found ?? ''}`
   if (!refresh) {
     const hit = (await db`select value from llm_cache where key = ${key}`) as { value: { items: ChecklistItem[] } }[]
     if (hit.length) return { items: hit[0].value.items, cached: true }
@@ -45,7 +62,9 @@ export async function checklist(session: string, premisesId: number, refresh = f
     date: h.inspected_on, breeding_found: h.breeding_found,
     habitats: h.habitats.map((x) => `${x.type}${x.breeding ? ' (breeding)' : ''}`),
   }))
-  const r = await complete({
+  let r: Awaited<ReturnType<typeof complete>>
+  try {
+    r = await complete({
     model: 'NANO', endpoint: 'checklist', session, maxTokens: 900, json: true, temperature: 0.2,
     messages: [
       { role: 'system', content: `You write site inspection checklists for NEA dengue (Aedes) inspectors in Singapore.
@@ -55,7 +74,11 @@ Give 8 to 12 short, concrete items. "why" is at most 12 words; mention a past fi
 Reply with ONLY JSON: {"items": [{"habitat": "<category>", "check": "<what to look at and where>", "priority": "high" | "normal", "why": "<reason>"}]}` },
       { role: 'user', content: JSON.stringify({ premises_type: data.premises.premises_type, layout: data.premises.layout_notes, past_inspections: past }) },
     ],
-  })
+    })
+  } catch (e) {
+    if (e instanceof LimitError) return { items: genericChecklist(data.premises.premises_type), cached: false, notice: `${e.message} This is a generic checklist for this type of premises.` }
+    throw e
+  }
   // Any "why" that cites a past date must match the history: that date, that habitat, breeding if claimed.
   const norm = (x: string) => x.toLowerCase().replace(/[^a-z]/g, '')
   const items = (parseJson<{ items: ChecklistItem[] }>(r.text).items ?? []).slice(0, 14).map((it) => {
@@ -82,7 +105,7 @@ export interface ReportDraft {
 }
 
 export async function draftReport(session: string, premisesId: number, notes: string, inspector: string | null): Promise<ReportDraft> {
-  const data = await premisesWithHistory(premisesId)
+  const data = await premisesWithHistory(premisesId, session)
   if (!data) throw new Error('Premises not found')
   const today = sgToday()
   const r = await complete({
@@ -111,17 +134,17 @@ Reply with ONLY JSON: {"location": "", "habitats": [{"type": "", "location": "",
 }
 
 export async function saveInspection(input: {
-  premises_id: number; team_name: string | null; inspector: string | null; notes_raw: string; report: ReportDraft; photo_ids?: number[]
+  premises_id: number; team_name: string | null; inspector: string | null; notes_raw: string; report: ReportDraft; photo_ids?: number[]; session: string
 }): Promise<{ id: number }> {
   const today = sgToday()
   const r = input.report
   const [row] = (await sql()`insert into inspections (premises_id, inspected_on, epi_week, team_name, inspector, breeding_found, habitats,
-      actions_taken, follow_up_needed, follow_up_due, notes_raw, report, is_demo)
+      actions_taken, follow_up_needed, follow_up_due, notes_raw, report, is_demo, session_id)
     values (${input.premises_id}, ${today}, ${epiWeekOf(new Date(today))}, ${input.team_name}, ${input.inspector}, ${r.breeding_found},
       ${JSON.stringify(r.habitats)}::jsonb, ${r.actions_taken}, ${r.follow_up_needed}, ${r.follow_up_due}, ${input.notes_raw},
-      ${JSON.stringify(r)}::jsonb, false)
+      ${JSON.stringify(r)}::jsonb, false, ${input.session})
     returning id`) as { id: number }[]
   if (input.photo_ids?.length)
-    await sql()`update photos set inspection_id = ${row.id} where id = any(${input.photo_ids}) and premises_id = ${input.premises_id} and inspection_id is null`
+    await sql()`update photos set inspection_id = ${row.id} where id = any(${input.photo_ids}) and premises_id = ${input.premises_id} and inspection_id is null and session_id = ${input.session}`
   return row
 }

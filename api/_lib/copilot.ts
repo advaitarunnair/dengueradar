@@ -6,6 +6,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { NumberLedger } from './checks.ts'
 import { findArea } from './data.ts'
 import { sql } from './db.ts'
+import { currentWeek } from './epi.ts'
 import { complete, parseJson } from './llm.ts'
 import { DEFAULT_CONSTRAINTS, generatePlan, savePlan, type AgentEvent, type Constraints, type Plan } from './planner.ts'
 import { planById, type PlanRecord } from './plans.ts'
@@ -76,8 +77,8 @@ function describeChanges(ch: NonNullable<Plan['changes']>, before: Constraints, 
   return parts.length ? `Re-planned: ${parts.join('; ')}.` : 'Re-planned: no areas changed.'
 }
 
-async function saveMessage(week: string, role: 'user' | 'assistant', content: string, planId: number | null) {
-  await sql()`insert into plan_messages (epi_week, role, content, plan_id) values (${week}, ${role}, ${content}, ${planId})`
+async function saveMessage(session: string, week: string, role: 'user' | 'assistant', content: string, planId: number | null) {
+  await sql()`insert into plan_messages (epi_week, role, content, plan_id, session_id) values (${week}, ${role}, ${content}, ${planId}, ${session})`
 }
 
 async function answer(session: string, record: PlanRecord, question: string, history: { role: string; content: string }[], onEvent: (e: AgentEvent) => void) {
@@ -124,7 +125,7 @@ export async function handleMessage(opts: Parameters<typeof handleMessageInner>[
     await handleMessageInner(opts)
   } catch (e) {
     // Keep the conversation readable: record that this request did not complete.
-    await saveMessage(opts.record.epi_week, 'assistant', 'That request did not complete, so the plan is unchanged. Please try again.', opts.record.id).catch(() => {})
+    await saveMessage(opts.session, currentWeek(), 'assistant', 'That request did not complete, so the plan is unchanged. Please try again.', opts.record.id).catch(() => {})
     throw e
   }
 }
@@ -137,8 +138,8 @@ async function handleMessageInner(opts: {
   onEvent: (e: AgentEvent | { type: 'reply'; text: string; record?: PlanRecord | null }) => void
 }) {
   const { record, message, session, onEvent } = opts
-  const week = record.epi_week
-  await saveMessage(week, 'user', message, record.id)
+  const week = currentWeek()
+  await saveMessage(session, week, 'user', message, record.id)
   onEvent({ type: 'status', text: 'Reading your message (Nemotron Super)' })
   const routed = await complete({
     model: 'SUPER', endpoint: 'copilot-route', session, maxTokens: 250, json: true, temperature: 0,
@@ -151,7 +152,7 @@ async function handleMessageInner(opts: {
   if (intent.intent !== 'replan') {
     onEvent({ type: 'status', text: 'Looking up the data to answer' })
     const text = await answer(session, record, message, opts.history, onEvent)
-    await saveMessage(week, 'assistant', text, record.id)
+    await saveMessage(session, week, 'assistant', text, record.id)
     onEvent({ type: 'reply', text })
     return
   }
@@ -161,8 +162,8 @@ async function handleMessageInner(opts: {
   onEvent({ type: 'status', text: 'Re-planning with your constraints (escalating to Nemotron Ultra)' })
   const plan = await generatePlan({ session, constraints, previous: record.plan, instruction: message, onEvent })
   plan.changes = diffPlans(record.plan, plan)
-  const saved = await savePlan(plan)
+  const saved = await savePlan(plan, 'app', session)
   const text = describeChanges(plan.changes, before, constraints)
-  await saveMessage(week, 'assistant', text, saved.id)
+  await saveMessage(session, week, 'assistant', text, saved.id)
   onEvent({ type: 'reply', text, record: await planById(saved.id) })
 }

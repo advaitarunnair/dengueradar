@@ -1,4 +1,4 @@
-import { LimitError } from './guard.ts'
+import { LimitError, withRequestContext } from './guard.ts'
 
 export class BadRequest extends Error {
   status = 400
@@ -8,7 +8,7 @@ export class BadRequest extends Error {
 export function handler(fn: (req: Request) => Promise<Response>) {
   return async (req: Request): Promise<Response> => {
     try {
-      return await fn(req)
+      return await withRequestContext(req, () => fn(req))
     } catch (e) {
       if (e instanceof LimitError || e instanceof BadRequest) return Response.json({ error: e.message }, { status: e.status })
       console.error(e)

@@ -8,7 +8,8 @@
     "db:migrate": "tsx scripts/db_migrate.ts",
     "db:seed-demo": "tsx scripts/db_seed_demo.ts",
     "job:weekly-plan": "tsx job/weekly_plan.ts",
-    "test": "tsx --test tests/ts/*.test.ts"
+    "test": "tsx --test tests/ts/*.test.ts",
+    "usage": "tsx scripts/usage.ts"
   },
   "engines": {
     "node": "24.x"
@@ -18,6 +19,7 @@
     "openai": "^6.49.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.13",
     "@types/node": "^26.6.5",
     "dotenv": "^18.0.8",
     "tsx": "^4.23.15",

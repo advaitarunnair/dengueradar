@@ -107,3 +107,18 @@ CREATE TABLE IF NOT EXISTS llm_usage (
 );
 CREATE INDEX IF NOT EXISTS llm_usage_at ON llm_usage (at);
 CREATE INDEX IF NOT EXISTS llm_usage_session ON llm_usage (session_id, at);
+
+-- Visitor sandbox (additive; existing rows keep session_id null and are treated as legacy).
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS session_id text;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS is_canonical boolean NOT NULL DEFAULT false;
+ALTER TABLE plans DROP CONSTRAINT IF EXISTS plans_epi_week_version_key;
+CREATE INDEX IF NOT EXISTS plans_week_session ON plans (epi_week, session_id);
+CREATE UNIQUE INDEX IF NOT EXISTS plans_one_canonical ON plans (epi_week) WHERE is_canonical;
+ALTER TABLE plan_messages ADD COLUMN IF NOT EXISTS session_id text;
+CREATE INDEX IF NOT EXISTS plan_messages_session ON plan_messages (epi_week, session_id);
+ALTER TABLE inspections ADD COLUMN IF NOT EXISTS session_id text;
+CREATE INDEX IF NOT EXISTS inspections_session ON inspections (session_id);
+ALTER TABLE photos ADD COLUMN IF NOT EXISTS session_id text;
+CREATE INDEX IF NOT EXISTS photos_session ON photos (session_id);
+ALTER TABLE llm_usage ADD COLUMN IF NOT EXISTS ip_hash text;
+CREATE INDEX IF NOT EXISTS llm_usage_ip ON llm_usage (ip_hash, at);

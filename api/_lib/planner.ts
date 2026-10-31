@@ -7,6 +7,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { NumberLedger } from './checks.ts'
 import { distanceKm, findArea, load, rankedAreas, type Area } from './data.ts'
 import { sql } from './db.ts'
+import { currentWeek, sgToday } from './epi.ts'
 import { startAgentRun } from './guard.ts'
 import { complete, MODELS, parseJson } from './llm.ts'
 import { nearestNeighbourOrder, splitIntoDays, type Stop } from './routing.ts'
@@ -113,9 +114,9 @@ async function premisesFor(ids: string[]): Promise<Stop[]> {
                       from premises where subzone_id = any(${ids}) order by id`) as Stop[]
 }
 
-async function inspectedLastWeek(): Promise<string[]> {
+async function inspectedLastWeek(session: string): Promise<string[]> {
   const rows = (await sql()`select distinct p.subzone_id from inspections i join premises p on p.id = i.premises_id
-                            where i.inspected_on >= current_date - 7`) as { subzone_id: string }[]
+                            where i.inspected_on >= ${sgToday()}::date - 7 and (i.is_demo or i.session_id = ${session})`) as { subzone_id: string }[]
   return rows.map((r) => r.subzone_id)
 }
 
@@ -133,14 +134,14 @@ export async function generatePlan(opts: {
   const teamCapacity = c.days * c.per_day
   const capacity = teamCapacity * c.teams.length
   const excluded = new Set(c.skip_subzones.map((s) => findArea(s)?.subzone_id ?? s))
-  if (c.skip_inspected_last_week) for (const id of await inspectedLastWeek()) excluded.add(id)
+  if (c.skip_inspected_last_week) for (const id of await inspectedLastWeek(opts.session)) excluded.add(id)
 
   const ledger = new NumberLedger()
   ledger.add({ c, capacity, teamCapacity, teams: c.teams.length })
   ledger.add(meta)
 
   const brief = [
-    `Plan epi week ${meta.epi_week}. Island-wide: ${meta.current_cases} cases in ${meta.case_week}, forecast ${meta.forecast_cases} for ${meta.forecast_week}, outlook ${meta.outlook}.`,
+    `Plan epi week ${currentWeek()}. Island-wide: ${meta.current_cases} cases in ${meta.case_week}, forecast ${meta.forecast_cases} for ${meta.forecast_week}, outlook ${meta.outlook}.`,
     `Teams: ${c.teams.join(', ')}. Each team works ${c.days} days at about ${c.per_day} premises a day, so each team can take ${teamCapacity} premises and the total capacity is ${capacity} premises.`,
     excluded.size ? `Do not include these subzones: ${[...excluded].join(', ')}.` : '',
     c.notes.length ? `Officer constraints: ${c.notes.join(' ')}` : '',
@@ -317,7 +318,7 @@ export async function generatePlan(opts: {
   const unsupported = ledger.unsupported([parsed.summary, ...context.map((x) => x.note)].join('\n'))
 
   return {
-    epi_week: meta.epi_week, generated_at: new Date().toISOString(), model: MODELS.ULTRA, constraints: c,
+    epi_week: currentWeek(), generated_at: new Date().toISOString(), model: MODELS.ULTRA, constraints: c,
     summary: parsed.summary ?? '', areas, teams, context,
     outlook: { current_cases: meta.current_cases, forecast_cases: meta.forecast_cases, outlook: meta.outlook, case_week: meta.case_week, forecast_week: meta.forecast_week },
     checks: { numbers_checked: ((written + areaText).match(/\d[\d,.]*/g) ?? []).length, unsupported, dropped, replaced, removed_sentences: removedSentences },
@@ -325,11 +326,12 @@ export async function generatePlan(opts: {
   }
 }
 
-export async function savePlan(plan: Plan, source = 'app'): Promise<{ id: number; version: number }> {
+export async function savePlan(plan: Plan, source: string, session: string | null, canonical = false): Promise<{ id: number; version: number }> {
   const [row] = (await sql()`
-    insert into plans (epi_week, version, plan, constraints, model, source)
-    values (${plan.epi_week}, coalesce((select max(version) from plans where epi_week = ${plan.epi_week}), 0) + 1,
-            ${JSON.stringify(plan)}::jsonb, ${JSON.stringify(plan.constraints)}::jsonb, ${plan.model}, ${source})
+    insert into plans (epi_week, version, plan, constraints, model, source, session_id, is_canonical)
+    values (${plan.epi_week}, coalesce((select max(version) from plans where epi_week = ${plan.epi_week}
+              and (session_id is not distinct from ${session} or is_canonical)), 0) + 1,
+            ${JSON.stringify(plan)}::jsonb, ${JSON.stringify(plan.constraints)}::jsonb, ${plan.model}, ${source}, ${session}, ${canonical})
     returning id, version`) as { id: number; version: number }[]
   return row
 }

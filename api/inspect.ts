@@ -1,5 +1,5 @@
 /**
- * GET  /api/inspect                  -> the confirmed plan's teams, days and visits, with this week's status
+ * GET  /api/inspect                  -> the visitor's plan as visits by team and day, with this week's status
  * GET  /api/inspect?premises=ID      -> premises details and inspection history
  * POST /api/inspect { action: 'checklist', premises_id, refresh? }            -> Nano site checklist (cached)
  * POST /api/inspect { action: 'draft', premises_id, notes, inspector }        -> Super structured report draft (not saved)
@@ -7,29 +7,42 @@
  */
 import { load } from './_lib/data.ts'
 import { sql } from './_lib/db.ts'
+import { ensureDemoData } from './_lib/demo.ts'
+import { currentWeek, sgToday } from './_lib/epi.ts'
 import { sessionId } from './_lib/guard.ts'
 import { BadRequest, handler, readJson } from './_lib/http.ts'
 import { checklist, draftReport, premisesWithHistory, saveInspection, type ReportDraft } from './_lib/inspect.ts'
+import { visiblePlan } from './_lib/plans.ts'
 
 export const GET = handler(async (req) => {
+  const session = sessionId(req)
+  await ensureDemoData()
   const premisesId = new URL(req.url).searchParams.get('premises')
   if (premisesId) {
-    const data = await premisesWithHistory(Number(premisesId))
+    const data = await premisesWithHistory(Number(premisesId), session)
     return data ? Response.json(data) : Response.json({ error: 'Premises not found' }, { status: 404 })
   }
-  const week = load().meta.epi_week
+  // Visits come straight from the visitor's plan, so a first-time visitor can start on the canonical plan at once.
+  const week = currentWeek()
+  const record = await visiblePlan(session, week)
+  if (!record) return Response.json({ epi_week: week, plan: null, visits: [] })
+  const stops = record.plan.teams.flatMap((t) => t.days.flatMap((d) => d.stops.map((s, i) => ({ ...s, team_name: t.name, day: d.day, visit_order: i + 1 }))))
+  const ids = stops.map((s) => s.premises_id)
   const db = sql()
-  const [plan] = (await db`select id, version, confirmed_at from plans where epi_week = ${week} and status = 'confirmed' limit 1`) as { id: number; version: number; confirmed_at: string }[]
-  if (!plan) return Response.json({ epi_week: week, plan: null, visits: [] })
-  const visits = await db`
-    select a.team_name, a.day, a.visit_order, a.subzone_id, p.id as premises_id, p.name, p.premises_type, p.lat, p.lon,
-           (select i.id from inspections i where i.premises_id = p.id and i.epi_week = ${week} and not i.is_demo order by i.id desc limit 1) as report_id,
-           (select i.breeding_found from inspections i where i.premises_id = p.id and i.epi_week = ${week} and not i.is_demo order by i.id desc limit 1) as breeding_found,
-           (select count(*)::int from inspections i where i.premises_id = p.id and i.breeding_found and i.inspected_on > current_date - 56) as breeding_last_8_weeks
-    from assignments a join premises p on p.id = a.premises_id
-    where a.plan_id = ${plan.id} order by a.team_name, a.day, a.visit_order` as Record<string, unknown>[]
+  const reports = (await db`select distinct on (premises_id) premises_id, id, breeding_found from inspections
+    where premises_id = any(${ids}) and epi_week = ${week} and session_id = ${session} order by premises_id, id desc`) as { premises_id: number; id: number; breeding_found: boolean }[]
+  const breeding = (await db`select premises_id, count(*)::int as n from inspections
+    where premises_id = any(${ids}) and breeding_found and inspected_on > ${sgToday()}::date - 56 and (is_demo or session_id = ${session}) group by 1`) as { premises_id: number; n: number }[]
   const names = new Map(load().areas.map((a) => [a.subzone_id, a.subzone]))
-  return Response.json({ epi_week: week, plan, visits: visits.map((v) => ({ ...v, subzone: names.get(v.subzone_id as string) ?? v.subzone_id })) })
+  return Response.json({
+    epi_week: week,
+    plan: { id: record.id, version: record.version, confirmed_at: record.confirmed_at, confirmed: record.status === 'confirmed', canonical: record.session_id === null },
+    visits: stops.map((s) => {
+      const r = reports.find((x) => x.premises_id === s.premises_id)
+      return { ...s, subzone: names.get(s.subzone_id) ?? s.subzone_id, report_id: r?.id ?? null, breeding_found: r?.breeding_found ?? null,
+               breeding_last_8_weeks: breeding.find((x) => x.premises_id === s.premises_id)?.n ?? 0 }
+    }),
+  })
 })
 
 export const POST = handler(async (req) => {
@@ -51,7 +64,7 @@ export const POST = handler(async (req) => {
       return Response.json(await saveInspection({
         premises_id: premisesId, team_name: body.team_name ? String(body.team_name) : null,
         inspector: body.inspector ? String(body.inspector).slice(0, 80) : null, notes_raw: String(body.notes_raw ?? '').slice(0, 3000), report,
-        photo_ids: Array.isArray(body.photo_ids) ? body.photo_ids.map(Number).filter(Number.isFinite).slice(0, 20) : [],
+        photo_ids: Array.isArray(body.photo_ids) ? body.photo_ids.map(Number).filter(Number.isFinite).slice(0, 20) : [], session,
       }))
     }
     default:

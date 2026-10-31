@@ -22,16 +22,16 @@ Reply with ONLY JSON: {"label": "container" | "puddle" | "drain" | "other", "is_
   })
   const out = parseJson<{ label: string; is_clear: boolean; note: string }>(r.text)
   const label = (LABELS as readonly string[]).includes(out.label) ? out.label : 'other'
-  const [row] = (await sql()`insert into photos (premises_id, taken_at, lat, lon, mime, data, label, is_clear, model_note)
+  const [row] = (await sql()`insert into photos (premises_id, taken_at, lat, lon, mime, data, label, is_clear, model_note, session_id)
     values (${input.premises_id}, ${input.taken_at ?? new Date().toISOString()}, ${input.lat}, ${input.lon}, ${m[1]}, ${bytes},
-            ${label}, ${Boolean(out.is_clear)}, ${String(out.note ?? '').slice(0, 200)})
+            ${label}, ${Boolean(out.is_clear)}, ${String(out.note ?? '').slice(0, 200)}, ${session})
     returning id, label, is_clear, model_note, taken_at::text, lat, lon`) as PhotoMeta[]
   return row
 }
 
 export interface PhotoMeta { id: number; label: string; is_clear: boolean; model_note: string; taken_at: string; lat: number | null; lon: number | null; inspection_id?: number | null }
 
-export async function photosFor(premisesId: number): Promise<PhotoMeta[]> {
+export async function photosFor(premisesId: number, session: string): Promise<PhotoMeta[]> {
   return (await sql()`select id, label, is_clear, model_note, taken_at::text, lat, lon, inspection_id from photos
-    where premises_id = ${premisesId} order by id desc limit 24`) as PhotoMeta[]
+    where premises_id = ${premisesId} and session_id = ${session} order by id desc limit 24`) as PhotoMeta[]
 }

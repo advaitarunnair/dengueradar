@@ -38,7 +38,7 @@ export default function Review() {
 
   useEffect(() => {
     setData(null)
-    apiGet<ReviewState>(`review${week ? `?week=${week}` : ''}`).then((d) => { setData(d); if (!week) setWeeks([d.stats.week, d.stats.previous_week]) }).catch((e: Error) => setError(e.message))
+    apiGet<ReviewState>(`review${week ? `?week=${week}` : ''}`).then((d) => { setData(d); if (!week) setWeeks([d.default_week, d.current_week]) }).catch((e: Error) => setError(e.message))
   }, [week])
 
   const loadBrief = useCallback(async (refresh = false) => {
@@ -52,7 +52,7 @@ export default function Review() {
   useEffect(() => {
     if (!data) return
     setBrief(null)
-    loadBrief()
+    if (data.stats.this_week.inspections > 0) loadBrief() // nothing to brief on in a week with no reports yet
     apiPost<{ explanations: Record<number, string> }>('review', { action: 'flags', week: data.stats.week }).then((r) => setFlags(r.explanations)).catch(() => setFlags({}))
   }, [data, loadBrief])
 
@@ -70,7 +70,7 @@ export default function Review() {
           <div className="flex gap-2" role="group" aria-label="Week">
             {weeks.map((w) => (
               <button key={w} onClick={() => setWeek(w)} aria-pressed={w === s.week}
-                className={`rounded-md border px-3 py-1.5 text-sm ${w === s.week ? 'border-accent text-accent' : 'border-line text-ink-2'}`}>{weekLabel(w)}</button>
+                className={`rounded-md border px-3 py-1.5 text-sm ${w === s.week ? 'border-accent text-accent' : 'border-line text-ink-2'}`}>{weekLabel(w)}{w === data.current_week ? ' (so far)' : ''}</button>
             ))}
           </div>
         </div>
@@ -88,9 +88,10 @@ export default function Review() {
           <button onClick={() => loadBrief(true)} disabled={briefBusy} className="rounded-md border border-line px-2.5 py-1 text-xs font-medium text-accent hover:bg-accent-soft disabled:text-ink-3">
             ↻ {briefBusy ? 'Writing…' : 'Regenerate'}
           </button>}>
-          {!brief && <p className="text-sm text-ink-2">{briefBusy ? 'Nemotron Super is writing the briefing…' : 'Loading…'}</p>}
+          {!brief && <p className="text-sm text-ink-2">{briefBusy ? 'Nemotron Super is writing the briefing…' : s.this_week.inspections === 0 ? <>No reports filed yet in {weekLabel(s.week)}. <Link to="/inspect" className="text-accent underline">File one in Inspect</Link> or switch to the last complete week.</> : 'Loading…'}</p>}
           {brief && (
             <div className="space-y-3 text-sm">
+              {brief.notice && <p className="rounded-md bg-accent-soft px-3 py-2 text-xs text-ink">{brief.notice} These figures are the computed counts, without an AI summary.</p>}
               {brief.sections.map((sec) => (
                 <section key={sec.title}>
                   <h3 className="font-semibold text-ink">{sec.title}</h3>
@@ -98,7 +99,7 @@ export default function Review() {
                 </section>
               ))}
               <p className="text-xs text-ink-3">
-                Nemotron Super{brief.cached ? ' (cached)' : ''} · every number checked against the computed counts
+                {brief.notice ? 'Computed counts' : `Nemotron Super${brief.cached ? ' (cached)' : ''}`} · every number checked against the computed counts
                 {brief.removed.length ? ` · ${brief.removed.length} point(s) with an unverifiable number removed` : ''}
               </p>
             </div>

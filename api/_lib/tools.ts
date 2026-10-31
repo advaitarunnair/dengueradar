@@ -96,7 +96,7 @@ export class ToolRunner {
           select i.epi_week, count(*)::int as inspections, count(*) filter (where i.breeding_found)::int as with_breeding,
                  count(*) filter (where i.follow_up_needed and not i.follow_up_done)::int as open_follow_ups
           from inspections i join premises p on p.id = i.premises_id
-          where p.subzone_id = ${a.subzone_id} group by 1 order by 1 desc limit 8`) as Record<string, unknown>[]
+          where p.subzone_id = ${a.subzone_id} and i.is_demo group by 1 order by 1 desc limit 8`) as Record<string, unknown>[]
         return { subzone_id: a.subzone_id, subzone: a.subzone, weekly_ranking: weeks, inspections_by_week_demo_data: insp }
       }
       case 'search_recent_context': {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { apiGet, apiPost } from '../../lib/api'
+import { apiGet, apiPost, sessionId } from '../../lib/api'
 
 interface Photo { id: number; label: string; is_clear: boolean; model_note: string; taken_at: string; lat: number | null; lon: number | null; inspection_id?: number | null }
 
@@ -60,7 +60,7 @@ export default function PhotoEvidence({ premisesId, fallback, onNewIds }: { prem
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((p) => (
             <li key={p.id} className="overflow-hidden rounded-lg border border-line bg-white">
-              <img src={`/api/photos?id=${p.id}`} alt={`${LABEL[p.label] ?? p.label}: ${p.model_note}`} className="h-28 w-full object-cover" loading="lazy" />
+              <img src={`/api/photos?id=${p.id}&s=${sessionId()}`} alt={`${LABEL[p.label] ?? p.label}: ${p.model_note}`} className="h-28 w-full object-cover" loading="lazy" />
               <div className="space-y-0.5 p-2 text-xs">
                 <p className="font-medium text-ink">{LABEL[p.label] ?? p.label}</p>
                 {p.is_clear ? <p className="text-ink-2">{p.model_note}</p> : <p className="text-ink"><span aria-hidden>⚠</span> Retake: {p.model_note}</p>}

@@ -2,6 +2,10 @@
 
 const SESSION_KEY = 'dengueradar-session'
 
+/** Used when storage is blocked: a sandbox for this tab, never one shared with other visitors. */
+const tabSession = () => Array.from({ length: 4 }, () => Math.random().toString(36).slice(2, 10)).join('-').slice(0, 40)
+let fallback: string | null = null
+
 export function sessionId(): string {
   try {
     let id = localStorage.getItem(SESSION_KEY)
@@ -11,7 +15,8 @@ export function sessionId(): string {
     }
     return id
   } catch {
-    return 'no-storage-session'
+    fallback ??= tabSession()
+    return fallback
   }
 }
 

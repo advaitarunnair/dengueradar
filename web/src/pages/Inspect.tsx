@@ -26,8 +26,8 @@ export default function Inspect() {
     return (
       <Card>
         <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Step 2 · Inspect</p>
-        <h1 className="text-xl font-semibold text-ink">No confirmed plan for {weekLabel(state.epi_week)} yet</h1>
-        <p className="mt-2 text-sm text-ink-2">Visits appear here once a planner confirms this week’s plan.</p>
+        <h1 className="text-xl font-semibold text-ink">No plan for {weekLabel(state.epi_week)} yet</h1>
+        <p className="mt-2 text-sm text-ink-2">Visits appear here once this week’s plan has been drafted.</p>
         <Link to="/" className="mt-3 inline-block rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white">Go to Plan</Link>
       </Card>
     )
@@ -38,7 +38,7 @@ export default function Inspect() {
       <Card>
         <p className="text-xs font-medium uppercase tracking-wide text-ink-3">Step 2 · Inspect</p>
         <h1 className="text-xl font-semibold text-ink">Visits · {weekLabel(state.epi_week)}</h1>
-        <p className="mt-1 text-xs text-ink-2">Confirmed plan v{state.plan.version} · {done} of {state.visits.length} reports filed this week</p>
+        <p className="mt-1 text-xs text-ink-2">{state.plan.confirmed ? `Your confirmed plan v${state.plan.version}` : <>Using the current draft plan (v{state.plan.version}). <Link to="/" className="text-accent underline">Review or confirm it</Link></>} · {done} of {state.visits.length} reports filed this week</p>
         <div className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Team">
             {teams.map((t) => (

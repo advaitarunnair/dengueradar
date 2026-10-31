@@ -20,12 +20,16 @@ export interface Plan {
   agent: { tool_calls: { name: string; args: string }[]; tokens: number; ms: number }
   changes?: { added: string[]; removed: string[]; moved: { subzone: string; from: string; to: string }[] }
 }
-export interface PlanRecord { id: number; version: number; status: 'draft' | 'confirmed'; epi_week: string; created_at: string; confirmed_at: string | null; source: string; plan: Plan }
+export interface PlanRecord { id: number; version: number; status: 'draft' | 'confirmed'; epi_week: string; created_at: string; confirmed_at: string | null; source: string; is_canonical?: boolean; session_id?: string | null; plan: Plan }
 export interface PlanState {
   epi_week: string
   record: PlanRecord | null
   messages: { role: 'user' | 'assistant'; content: string; plan_id: number | null; created_at: string }[]
   candidates: { subzone_id: string; subzone: string; rank: number; band: Band }[]
+  /** The plan shown is from an earlier week because this week's has not been drafted yet. */
+  stale?: boolean
+  /** Set only on test deployments running with a date override. */
+  as_of?: string | null
 }
 
 /** Categorical colours for teams (validated palette slots 1 to 3), always shown with the team name. */
@@ -52,7 +56,7 @@ export interface Visit {
   team_name: string; day: number; visit_order: number; subzone_id: string; subzone: string; premises_id: number; name: string; premises_type: string
   lat: number; lon: number; report_id: number | null; breeding_found: boolean | null; breeding_last_8_weeks: number
 }
-export interface VisitsState { epi_week: string; plan: { id: number; version: number; confirmed_at: string } | null; visits: Visit[] }
+export interface VisitsState { epi_week: string; plan: { id: number; version: number; confirmed_at: string | null; confirmed: boolean; canonical: boolean } | null; visits: Visit[] }
 export interface Habitat { type: string; location: string | null; breeding: boolean; count: number | null }
 export interface Inspection {
   id: number; inspected_on: string; epi_week: string; team_name: string | null; inspector: string | null; breeding_found: boolean
@@ -88,5 +92,5 @@ export interface Offender {
   breeding_weeks: string[]; max_habitats_one_visit: number; habitats: string | null; last_breeding: string; visits: number
   level: 'persistent' | 'repeat' | 'multiple'; escalation: string
 }
-export interface ReviewState { stats: ReviewStats; offenders: Offender[]; offenders_total: number }
-export interface Briefing { sections: { title: string; points: string[] }[]; removed: string[]; cached: boolean }
+export interface ReviewState { stats: ReviewStats; offenders: Offender[]; offenders_total: number; default_week: string; current_week: string }
+export interface Briefing { sections: { title: string; points: string[] }[]; removed: string[]; cached: boolean; notice?: string }

@@ -19,6 +19,7 @@ export default function InspectPremises() {
   const [detail, setDetail] = useState<PremisesDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [items, setItems] = useState<ChecklistItem[] | null>(null)
+  const [checklistNotice, setChecklistNotice] = useState<string | null>(null)
   const [ticked, setTicked] = useState<Set<number>>(new Set())
   const [checklistError, setChecklistError] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
@@ -30,14 +31,17 @@ export default function InspectPremises() {
 
   useEffect(() => {
     apiGet<PremisesDetail>(`inspect?premises=${id}`).then(setDetail).catch((e: Error) => setError(e.message))
-    apiPost<{ items: ChecklistItem[] }>('inspect', { action: 'checklist', premises_id: Number(id) })
-      .then((r) => setItems(r.items)).catch((e: Error) => setChecklistError(e.message))
+    apiPost<{ items: ChecklistItem[]; notice?: string }>('inspect', { action: 'checklist', premises_id: Number(id) })
+      .then((r) => { setItems(r.items); setChecklistNotice(r.notice ?? null) }).catch((e: Error) => setChecklistError(e.message))
   }, [id])
 
   const makeDraft = async () => {
     setBusy('draft'); setError(null)
     try { setDraft(await apiPost<ReportDraft>('inspect', { action: 'draft', premises_id: Number(id), notes, inspector })) }
-    catch (e) { setError((e as Error).message) }
+    catch (e) {
+      setError(`${(e as Error).message} You can still fill in the report by hand below.`)
+      setDraft({ location: detail?.premises.name ?? '', habitats: [], breeding_found: false, actions_taken: '', follow_up_needed: false, follow_up_due: null, summary: '', missing: [] })
+    }
     finally { setBusy(null) }
   }
   const save = async () => {
@@ -84,6 +88,7 @@ export default function InspectPremises() {
       <Card title="Site checklist" action={<span className="text-xs text-ink-3">Nemotron Nano · tailored to this premises</span>}>
         {checklistError && <p className="text-sm text-ink">⚠ {checklistError}</p>}
         {!items && !checklistError && <p className="text-sm text-ink-2">Preparing checklist…</p>}
+        {checklistNotice && <p className="mb-2 rounded-md bg-accent-soft px-3 py-2 text-xs text-ink">{checklistNotice}</p>}
         {items && (
           <ul className="space-y-1.5">
             {items.map((it, i) => (

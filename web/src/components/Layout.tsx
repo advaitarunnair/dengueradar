@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { apiPost } from '../lib/api'
 import { useData } from '../lib/data'
 import { dateLabel, weekLabel } from '../lib/format'
 import type { Meta } from '../types'
@@ -13,6 +14,17 @@ const STEPS = [
   { to: '/inspect', label: 'Inspect', hint: 'On site: checklist and reports' },
   { to: '/review', label: 'Review', hint: 'Weekly summary and repeat sites' },
 ]
+
+async function resetDemo() {
+  if (!window.confirm('Reset your demo? This removes your re-plans, chat, reports and photos. Other visitors are not affected.')) return
+  try {
+    await apiPost('session', { action: 'reset' })
+    window.location.hash = '#/'
+    window.location.reload()
+  } catch (e) {
+    window.alert(`Could not reset: ${(e as Error).message}`)
+  }
+}
 
 export default function Layout() {
   const { data: meta } = useData<Meta>('meta.json')
@@ -31,6 +43,8 @@ export default function Layout() {
               </p>
             )}
             <RefreshButton current={meta?.generated_at} />
+            <button onClick={resetDemo} title="Remove your re-plans, chat, reports and photos, and return to this week’s default plan"
+              className="rounded-md border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-accent-soft">↺ Reset demo</button>
             <nav className="flex gap-1" aria-label="Data and method">
               <NavLink to="/map" className={link}>Risk map</NavLink>
               <NavLink to="/model" className={link}>Model</NavLink>

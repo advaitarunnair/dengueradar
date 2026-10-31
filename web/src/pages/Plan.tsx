@@ -68,7 +68,7 @@ export default function PlanPage() {
             <h1 className="text-xl font-semibold text-ink">This week’s inspection plan · {weekLabel(state.epi_week)}</h1>
             {record && plan && (
               <p className="mt-1 text-xs text-ink-2">
-                {record.status === 'confirmed' ? '✓ Confirmed' : 'Draft'} · version {record.version} · drafted by Nemotron Ultra
+                {record.session_id ? (record.status === 'confirmed' ? '✓ Your confirmed version' : 'Your version') : 'This week’s default plan'} · version {record.version} · drafted by Nemotron Ultra
                 {record.source === 'scheduled_job' ? ' in the scheduled weekly job' : ''} on {timeLabel(record.created_at)} ·{' '}
                 {plan.agent.tool_calls.length} tool calls, {(plan.agent.ms / 1000).toFixed(0)} s
               </p>
@@ -95,6 +95,8 @@ export default function PlanPage() {
             )}
           </div>
         </div>
+        {state.as_of && <p className="mt-3 rounded-md border border-dashed border-ink-3 px-3 py-2 text-xs text-ink-2">Test deployment: viewing as of {state.as_of}. Rankings, clusters and the forecast are the latest real data; only dates and demo records move.</p>}
+        {state.stale && <p className="mt-3 rounded-md border border-line bg-accent-soft px-3 py-2 text-xs text-ink">This is last week’s plan. This week’s is drafted automatically at 06:30 Singapore time, or you can generate it now.</p>}
         {error && <p role="alert" className="mt-3 rounded-md border border-line bg-accent-soft px-3 py-2 text-sm text-ink">⚠ {error}</p>}
         {running && (
           <div className="mt-4 rounded-lg border border-line bg-page p-3">
