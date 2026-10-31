@@ -33,7 +33,7 @@ export default function InspectionList({ rows, capacity, onCapacity, selectedId,
       <div className="no-print mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-ink">Inspection list</h2>
-          <p className="text-xs text-ink-2">Ranked by priority = risk score × residents aged 65+ or under 15.</p>
+          <p className="text-xs text-ink-2">Large nearby clusters first, then by band, then by priority (risk² × √seniors and children).</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-xs text-ink-2">
@@ -88,7 +88,7 @@ export default function InspectionList({ rows, capacity, onCapacity, selectedId,
           </tbody>
         </table>
       </div>
-      {!customWeights && meta.previous_week === null && <p className="no-print mt-2 text-xs text-ink-3">Week-on-week changes appear from the second weekly run; this is the first snapshot.</p>}
+      {!customWeights && meta.previous_week === null && <p className="no-print mt-2 text-xs text-ink-3">Week-on-week changes appear once two weeks have been ranked the same way.</p>}
       <Disclaimer className="print-only mt-4" />
     </Card>
   )

@@ -23,7 +23,7 @@ export default function Dashboard() {
   const weights = custom ?? defaults
   const scored = useMemo(() => {
     if (!scores.data || !meta.data || !weights) return new Map()
-    return rescore(scores.data.features.map((f) => f.properties), weights, meta.data.outlook, meta.data.scoring.bands)
+    return rescore(scores.data.features.map((f) => f.properties), weights, meta.data.outlook, meta.data.scoring.bands, meta.data.scoring.ranking)
   }, [scores.data, meta.data, weights]) as ReturnType<typeof rescore>
   const ranked = useMemo(() => [...scored.values()].sort((a, b) => a.rank - b.rank), [scored])
 

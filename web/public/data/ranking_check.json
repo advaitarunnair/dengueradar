@@ -2,6 +2,10 @@
  "new_clusters": 6,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 1,
+ "new_method": {
+  "in_high_prior_week": 0,
+  "in_high_or_elevated_prior_week": 1
+ },
  "weeks": [
   "2026-W40"
  ],
@@ -13,7 +17,8 @@
    "cases": 3,
    "subzone_id": "outram-chinatown",
    "snapshot_week": "2026-W40",
-   "band_week_before": "Low"
+   "band_week_before": "Low",
+   "band_week_before_new": "Low"
   },
   {
    "first_seen": "2026-10-23",
@@ -21,7 +26,8 @@
    "cases": 2,
    "subzone_id": "ang-mo-kio-ang-mo-kio-town-centre",
    "snapshot_week": "2026-W41",
-   "band_week_before": "Elevated"
+   "band_week_before": "Elevated",
+   "band_week_before_new": "Elevated"
   },
   {
    "first_seen": "2026-10-24",
@@ -29,7 +35,8 @@
    "cases": 2,
    "subzone_id": "jurong-east-jurong-river",
    "snapshot_week": "2026-W41",
-   "band_week_before": null
+   "band_week_before": null,
+   "band_week_before_new": null
   },
   {
    "first_seen": "2026-10-27",
@@ -37,7 +44,8 @@
    "cases": 2,
    "subzone_id": "clementi-toh-tuck",
    "snapshot_week": "2026-W42",
-   "band_week_before": null
+   "band_week_before": null,
+   "band_week_before_new": null
   },
   {
    "first_seen": "2026-10-28",
@@ -45,7 +53,8 @@
    "cases": 2,
    "subzone_id": "pasir-ris-loyang-east",
    "snapshot_week": "2026-W42",
-   "band_week_before": "Low"
+   "band_week_before": "Low",
+   "band_week_before_new": "Low"
   },
   {
    "first_seen": "2026-10-28",
@@ -53,7 +62,8 @@
    "cases": 2,
    "subzone_id": "yishun-yishun-east",
    "snapshot_week": "2026-W42",
-   "band_week_before": "Low"
+   "band_week_before": "Low",
+   "band_week_before_new": "Low"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

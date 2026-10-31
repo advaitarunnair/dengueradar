@@ -94,7 +94,7 @@ async function answer(session: string, record: PlanRecord, question: string, his
   const messages: ChatCompletionMessageParam[] = [
     { role: 'system', content: `You are DengueRadar Copilot, helping an NEA inspection officer understand this week's plan.
 Answer in at most 120 words, plainly. Use the tools to look up any area you discuss. Every number must come from the plan below or a tool result; never invent or calculate numbers.
-"rank" is the island-wide priority rank (risk index x seniors and children). The forecast is island-wide only. The risk index is rule-based and unvalidated. Premises and inspections are demo data.
+"rank" is the island-wide order: subzones within 1 km of a cluster of 10+ cases first (always band High), then by band (High, Elevated, Low), then priority = risk squared x square root of seniors and children. The forecast is island-wide only. The risk index is rule-based and unvalidated. Premises and inspections are demo data.
 Current plan: ${JSON.stringify(planBrief)}` },
     ...history.slice(-6).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     { role: 'user', content: question },

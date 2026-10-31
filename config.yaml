@@ -67,3 +67,24 @@ scoring:
     Rising: {high: 0.20, elevated: 0.20}
     Stable: {high: 0.10, elevated: 0.20}
     Falling: {high: 0.10, elevated: 0.20}
+
+# How subzones are ranked. Each option can be toggled; scripts/compare_ranking.py compares methods.
+# Default chosen 2026-10: under the old method a subzone 0.01 km from a 99-case cluster ranked #15 and could be
+# cut, while a Low-band subzone ranked #3 on population alone. So: percentile scaling (which flattens cluster
+# size) gives way to log scaling, large nearby clusters force band High, and population is damped.
+ranking:
+  cluster_scaling: log              # log: log1p(pressure) / max. percentile: rank across subzones (old)
+  override_km: 1.0                  # a cluster of at least override_cases this close...
+  override_cases: 10                # ...puts the subzone in High and ahead of all others. null turns it off
+  priority_risk_exponent: 2         # priority = risk^k x population^p
+  priority_population_exponent: 0.5
+  sort: band_first                  # band_first: High, Elevated, Low, then priority. priority: priority only
+
+# The method used before 2026-10, kept for comparison and the ranking early check.
+ranking_old:
+  cluster_scaling: percentile
+  override_km: 1.0
+  override_cases: null
+  priority_risk_exponent: 1
+  priority_population_exponent: 1
+  sort: priority

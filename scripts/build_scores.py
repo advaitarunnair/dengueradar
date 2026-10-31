@@ -22,6 +22,7 @@ from train_model import HORIZON, MODEL_PATH, build_features, build_weekly, featu
 
 HISTORY = DATA / "history"
 COMPONENTS = ("spread", "rain", "temp")
+RANKING_METHOD = "v2"  # stored in snapshots; rank changes are only shown between weeks ranked the same way
 
 
 # ---- inputs ----------------------------------------------------------------
@@ -197,10 +198,12 @@ def spread_components(subzones: gpd.GeoDataFrame, clusters: gpd.GeoDataFrame, cf
     for centroid in subzones["centroid"]:
         d_km = np.array([centroid.distance(g) / 1000 for g in geoms]) if geoms else np.array([])
         near = d_km <= 1.0
+        within_override = d_km <= cfg["ranking"]["override_km"]
         rows.append({
             "spread_raw": float((cases * np.exp(-d_km / cfg["scoring"]["decay_km"])).sum()) if geoms else 0.0,
             "clusters_within_1km": int(near.sum()), "cluster_cases_within_1km": int(cases[near].sum()) if geoms else 0,
             "nearest_cluster_km": round(float(d_km.min()), 2) if geoms else None,
+            "max_cluster_cases_near": int(cases[within_override].max()) if geoms and within_override.any() else 0,
         })
     return pd.DataFrame(rows, index=subzones.index)
 
@@ -251,20 +254,29 @@ def percentile_rank(values: pd.Series) -> pd.Series:
     return (values.rank(method="min") - 1) / (len(values) - 1)
 
 
-def score_subzones(df: pd.DataFrame, weights: dict, outlook: str, cfg: dict) -> pd.DataFrame:
-    """Pure, deterministic scoring. `df` needs subzone_id, residents, vulnerable, spread_raw, rain_mm, temp_c.
+def score_subzones(df: pd.DataFrame, weights: dict, outlook: str, cfg: dict, ranking: dict | None = None) -> pd.DataFrame:
+    """Pure, deterministic scoring. `df` needs subzone_id, residents, vulnerable, spread_raw, rain_mm, temp_c
+    and optionally max_cluster_cases_near. `ranking` defaults to cfg["ranking"]; see config.yaml for the options.
 
     Subzones under the resident minimum are excluded (band None). The frontend re-implements the
-    risk, band and priority steps for the weight sliders, using the stored percentile components.
+    risk, band, priority and rank steps for the weight sliders (web/src/lib/scoring.ts), using the stored
+    0 to 1 components and cluster_override flag, so keep the two in step.
     """
+    r = ranking or cfg["ranking"]
     out = df.copy()
     out["eligible"] = out["residents"] >= cfg["scoring"]["min_residents"]
     el = out[out["eligible"]]
     for comp, raw in zip(COMPONENTS, ("spread_raw", "rain_mm", "temp_c")):
         out[comp] = percentile_rank(el[raw]).round(4)
+    if r["cluster_scaling"] == "log":
+        # Keeps cluster size meaningful: a 99-case cluster next door scores far above a 2-case one.
+        pressure = np.log1p(el["spread_raw"])
+        out["spread"] = (pressure / pressure.max() if pressure.max() > 0 else pressure * 0).round(4)
     total = sum(weights[c] for c in COMPONENTS)
     out["risk"] = sum(weights[c] / total * out[c] for c in COMPONENTS).round(4)
-    out["priority"] = (out["risk"] * out["vulnerable"]).round(1)
+    out["priority"] = (out["risk"] ** r["priority_risk_exponent"] * out["vulnerable"].clip(lower=0) ** r["priority_population_exponent"]).round(2)
+    near = out["max_cluster_cases_near"] if "max_cluster_cases_near" in out else pd.Series(0, index=out.index)
+    out["cluster_override"] = bool(r["override_cases"]) and out["eligible"] & (near >= (r["override_cases"] or 0))
 
     el = out[out["eligible"]]
     n = len(el)
@@ -273,9 +285,17 @@ def score_subzones(df: pd.DataFrame, weights: dict, outlook: str, cfg: dict) -> 
     n_elev = int(bands["elevated"] * n + 0.5)
     by_risk = el.sort_values(["risk", "subzone_id"], ascending=[False, True]).index
     out["risk_rank"] = pd.Series(range(1, n + 1), index=by_risk)
+    # Overrides are always High; the rest of the High quota, then Elevated, are filled by risk.
+    override = [i for i in by_risk if out.at[i, "cluster_override"]]
+    rest = [i for i in by_risk if not out.at[i, "cluster_override"]]
+    n_high_rest = max(0, n_high - len(override))
     out["band"] = None
-    out.loc[by_risk, "band"] = ["High"] * n_high + ["Elevated"] * n_elev + ["Low"] * (n - n_high - n_elev)
-    by_priority = el.sort_values(["priority", "subzone_id"], ascending=[False, True]).index
+    out.loc[override, "band"] = "High"
+    out.loc[rest, "band"] = ["High"] * n_high_rest + ["Elevated"] * n_elev + ["Low"] * (len(rest) - n_high_rest - n_elev)
+    order = el.assign(_o=out.loc[el.index, "cluster_override"].map(lambda x: 0 if x else 1),
+                      _b=out.loc[el.index, "band"].map({"High": 0, "Elevated": 1, "Low": 2}) if r["sort"] == "band_first" else 0,
+                      _p=out.loc[el.index, "priority"])
+    by_priority = order.sort_values(["_o", "_b", "_p", "subzone_id"], ascending=[True, True, False, True]).index
     out["rank"] = pd.Series(range(1, n + 1), index=by_priority)
     for col in ("risk_rank", "rank"):
         out[col] = out[col].astype("Int64")
@@ -291,6 +311,8 @@ def top_share(p: float) -> str:
 
 def reason(r: pd.Series) -> str:
     parts = []
+    if r.get("cluster_override"):
+        parts.append(f"{int(r['max_cluster_cases_near'])}-case cluster within 1 km (automatic High)")
     if r["clusters_within_1km"] > 0:
         n, c = r["clusters_within_1km"], r["cluster_cases_within_1km"]
         parts.append(f"{n} active cluster{'s' if n != 1 else ''} within 1 km ({c} case{'s' if c != 1 else ''})")
@@ -314,6 +336,8 @@ def week_on_week(scored: pd.DataFrame, week: str) -> tuple[pd.DataFrame, str | N
     if not previous:
         return out, None
     prev = json.loads(previous[-1].read_text())
+    if prev.get("ranking_method") != RANKING_METHOD:
+        return out, None  # last week used another method, so a rank change would be misleading
     prev_rank = {k: v["rank"] for k, v in prev["subzones"].items() if v.get("rank") is not None}
     for i, r in out[out["eligible"]].iterrows():
         before = prev_rank.get(r["subzone_id"])
@@ -339,6 +363,7 @@ def _clean(v):
 SCORE_PROPS = ["subzone_id", "subzone", "planning_area", "region", "residents", "age65plus", "under15", "vulnerable",
                "eligible", "spread", "rain", "temp", "spread_raw", "rain_mm", "temp_c", "rain_mm_station",
                "temp_c_station", "clusters_within_1km", "cluster_cases_within_1km", "nearest_cluster_km",
+               "max_cluster_cases_near", "cluster_override",
                "risk", "priority", "band", "risk_rank", "rank", "rank_change", "is_new_in_top20", "reason"]
 
 
@@ -398,6 +423,8 @@ def main() -> None:
     df = pd.concat([subzones, spread_components(subzones, clusters, cfg),
                     nearest_station_value(subzones, st, "rain_mm"), nearest_station_value(subzones, st, "temp_c")], axis=1)
     scored = score_subzones(df, cfg["scoring"]["weights"], forecast["outlook"], cfg)
+    # The old method's band is kept in the snapshot so the early check can compare both honestly.
+    scored["band_old"] = score_subzones(df, cfg["scoring"]["weights"], forecast["outlook"], cfg, cfg["ranking_old"])["band"]
     scored["reason"] = [reason(r) if r["eligible"] else "Fewer than 100 residents: not ranked" for _, r in scored.iterrows()]
     scored, previous_week = week_on_week(scored, week)
     scored = gpd.GeoDataFrame(scored, geometry="geometry", crs=4326)
@@ -425,7 +452,7 @@ def main() -> None:
                     "rain_stations_no_data": int((st["rain_missing_days"] == st["rain_window_days"]).sum()),
                     "temp_stations_with_data": int(st["temp_c"].notna().sum()), "changi_source": changi_source,
                     "forecast_weather_features_missing": forecast["weather_features_missing"]},
-        "scoring": {"weights": cfg["scoring"]["weights"], "bands": cfg["scoring"]["bands"],
+        "scoring": {"weights": cfg["scoring"]["weights"], "bands": cfg["scoring"]["bands"], "ranking": cfg["ranking"],
                     "min_residents": cfg["scoring"]["min_residents"], "decay_km": cfg["scoring"]["decay_km"],
                     "eligible_subzones": int(len(eligible)), "total_subzones": int(len(scored))},
         "previous_week": previous_week,
@@ -434,9 +461,9 @@ def main() -> None:
     (WEB_DATA / "meta.json").write_text(json.dumps(meta, indent=1))
 
     HISTORY.mkdir(parents=True, exist_ok=True)
-    snapshot = {"epi_week": week, "generated_at": meta["generated_at"], "outlook": forecast["outlook"],
+    snapshot = {"epi_week": week, "generated_at": meta["generated_at"], "outlook": forecast["outlook"], "ranking_method": RANKING_METHOD,
                 "current_cases": forecast["current_cases"], "forecast_cases": forecast["forecast_cases"],
-                "subzones": {r["subzone_id"]: {"rank": int(r["rank"]), "band": r["band"], "risk": float(r["risk"]),
+                "subzones": {r["subzone_id"]: {"rank": int(r["rank"]), "band": r["band"], "band_old": r["band_old"], "risk": float(r["risk"]),
                                                "priority": float(r["priority"])} for _, r in eligible.iterrows()}}
     (HISTORY / f"{week.replace('-W', '-')}.json").write_text(json.dumps(snapshot, separators=(",", ":")))
     # Early check of the ranking against clusters that appear later (sample size is shown on the site).

@@ -2,6 +2,14 @@ import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 
 export type Outlook = 'Rising' | 'Stable' | 'Falling'
 export type Band = 'High' | 'Elevated' | 'Low'
+export interface RankingConfig {
+  cluster_scaling: 'log' | 'percentile'
+  override_km: number
+  override_cases: number | null
+  priority_risk_exponent: number
+  priority_population_exponent: number
+  sort: 'band_first' | 'priority'
+}
 export type Component = 'spread' | 'rain' | 'temp'
 export type Weights = Record<Component, number>
 
@@ -26,6 +34,9 @@ export interface SubzoneProps {
   clusters_within_1km: number
   cluster_cases_within_1km: number
   nearest_cluster_km: number | null
+  max_cluster_cases_near?: number
+  /** A large cluster is this close, so the subzone is High and listed first. */
+  cluster_override?: boolean
   risk: number | null
   priority: number | null
   band: Band | null
@@ -104,6 +115,7 @@ export interface Meta {
   scoring: {
     weights: Weights
     bands: Record<Outlook, { high: number; elevated: number }>
+    ranking?: RankingConfig
     min_residents: number
     decay_km: number
     eligible_subzones: number

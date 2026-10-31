@@ -12,6 +12,7 @@ export default function About() {
   const { data: meta, error, loading } = useData<Meta>('meta.json')
   if (error || !meta) return <Status loading={loading} error={error} />
   const w = meta.scoring.weights
+  const r = meta.scoring.ranking ?? { override_km: 1, override_cases: 10, priority_risk_exponent: 2, priority_population_exponent: 0.5 }
   return (
     <div className="space-y-5">
       <Card title="The problem">
@@ -51,16 +52,19 @@ export default function About() {
       </Card>
       <Card title="How the ranking works">
         <div className="max-w-3xl space-y-3 text-sm leading-relaxed text-ink">
-          <p>Each of the {meta.scoring.eligible_subzones} URA subzones with at least {meta.scoring.min_residents} residents gets three scores, each turned into a 0 to 1 percentile across subzones:</p>
+          <p>Each of the {meta.scoring.eligible_subzones} URA subzones with at least {meta.scoring.min_residents} residents gets three scores from 0 to 1:</p>
           <ul className="list-disc space-y-1 pl-5">
-            <li><strong>Spread</strong>: for every active cluster, its case count × e<sup>−distance in km</sup>, added up. Distance is from the subzone centre to the cluster boundary.</li>
-            <li><strong>Rain</strong>: total rainfall from 8 weeks to 2 weeks ago at the nearest weather station that is missing no more than {meta.weather.rain_max_missing_share * 100}% of those days.</li>
-            <li><strong>Temp</strong>: mean air temperature over the last 4 weeks at the nearest station with data.</li>
+            <li><strong>Spread</strong>: for every active cluster, its case count × e<sup>−distance in km</sup>, added up. Distance is from the subzone centre to the cluster boundary. This pressure is log-scaled and divided by the highest value: log(1 + pressure) / max.</li>
+            <li><strong>Rain</strong>: total rainfall from 8 weeks to 2 weeks ago at the nearest weather station that is missing no more than {meta.weather.rain_max_missing_share * 100}% of those days, as a percentile across subzones.</li>
+            <li><strong>Temp</strong>: mean air temperature over the last 4 weeks at the nearest station with data, as a percentile across subzones.</li>
           </ul>
           <pre className="overflow-x-auto rounded-md border border-line bg-page p-3 text-xs">{`risk     = ${w.spread} × spread + ${w.rain} × rain + ${w.temp} × temp
-priority = risk × (residents aged 65+ and under 15)`}</pre>
-          <p>Subzones are banded by risk. When the outlook is Rising, the top {meta.scoring.bands.Rising.high * 100}% are High and the next {meta.scoring.bands.Rising.elevated * 100}% Elevated. When it is Stable or Falling, the top {meta.scoring.bands.Stable.high * 100}% are High and the next {meta.scoring.bands.Stable.elevated * 100}% Elevated. The inspection list is sorted by priority, so that among risky areas, those with more seniors and children come first.</p>
-          <p>The weights are a judgement, not a fitted result. You can change them on the dashboard to see how the list moves.</p>
+priority = risk^${r.priority_risk_exponent} × (residents aged 65+ and under 15)^${r.priority_population_exponent}`}</pre>
+          <p><strong>Large-cluster override.</strong> Any subzone within {r.override_km} km of an active cluster of {r.override_cases} or more cases is always High and listed ahead of every other subzone.</p>
+          <p><strong>Bands.</strong> After the overrides, the rest of the High band and then the Elevated band are filled by risk. When the outlook is Rising, High is {meta.scoring.bands.Rising.high * 100}% of subzones and Elevated the next {meta.scoring.bands.Rising.elevated * 100}%. When it is Stable or Falling, High is {meta.scoring.bands.Stable.high * 100}% and Elevated the next {meta.scoring.bands.Stable.elevated * 100}%. If overrides exceed the High quota, all of them are still High.</p>
+          <p><strong>Order.</strong> Overrides first, then High, Elevated and Low, and by priority within each.</p>
+          <p><strong>Why this method.</strong> Under the earlier version (percentile spread, priority = risk × population, sorted by priority alone), a subzone next to a 99-case cluster could rank 15th and be cut from the plan, while a Low-band subzone ranked 3rd on population alone. This fixes the ordering problem. It is not evidence of better prediction: in the early check against new clusters, the two methods currently tie, on a sample far too small to conclude anything.</p>
+          <p><strong>What you can change.</strong> The three risk weights are a judgement, not a fitted result, and you can adjust them with the sliders on the risk map. These are fixed: the {r.override_km} km / {r.override_cases}-case override, the priority exponents ({r.priority_risk_exponent} and {r.priority_population_exponent}), log scaling, the {meta.scoring.decay_km} km distance decay and the band shares.</p>
         </div>
       </Card>
       <Card title="Data sources">

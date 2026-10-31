@@ -14,6 +14,7 @@ export interface AreaProps {
   spread: number | null; rain: number | null; temp: number | null
   rain_mm: number; temp_c: number; rain_mm_station: string; temp_c_station: string
   clusters_within_1km: number; cluster_cases_within_1km: number; nearest_cluster_km: number | null
+  max_cluster_cases_near?: number; cluster_override?: boolean
   risk: number | null; priority: number | null; band: 'High' | 'Elevated' | 'Low' | null
   risk_rank: number | null; rank: number | null; rank_change: number | null; is_new_in_top20: boolean; reason: string
 }

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-31T09:12:06+08:00",
+ "generated_at": "2026-10-31T15:31:30+08:00",
  "epi_week": "2026-W43",
  "current_cases": 61,
  "case_week": "2026-W42",
@@ -91,12 +91,20 @@
     "elevated": 0.2
    }
   },
+  "ranking": {
+   "cluster_scaling": "log",
+   "override_km": 1.0,
+   "override_cases": 10,
+   "priority_risk_exponent": 2,
+   "priority_population_exponent": 0.5,
+   "sort": "band_first"
+  },
   "min_residents": 100,
   "decay_km": 1.0,
   "eligible_subzones": 241,
   "total_subzones": 332
  },
- "previous_week": "2026-W42",
+ "previous_week": null,
  "sources": [
   {
    "name": "NEA Dengue Clusters map feed",

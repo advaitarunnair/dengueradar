@@ -58,13 +58,62 @@ def test_small_subzones_are_excluded(inputs):
 
 
 def test_risk_and_priority_formula(inputs):
+    r = CFG["ranking"]
     s = score_subzones(inputs, W, "Stable", CFG)
     el = s[s["eligible"]]
-    assert el[["spread", "rain", "temp"]].min().min() == 0 and el[["spread", "rain", "temp"]].max().max() == 1
+    assert el[["spread", "rain", "temp"]].max().max() == 1
+    assert np.allclose(el["spread"], np.log1p(el["spread_raw"]) / np.log1p(el["spread_raw"]).max(), atol=1e-4)
     expected = W["spread"] * el["spread"] + W["rain"] * el["rain"] + W["temp"] * el["temp"]
     assert np.allclose(el["risk"], expected, atol=1e-4)
-    assert np.allclose(el["priority"], el["risk"] * el["vulnerable"], atol=0.051)
+    assert np.allclose(el["priority"], el["risk"] ** r["priority_risk_exponent"] * el["vulnerable"] ** r["priority_population_exponent"], atol=0.05)
     assert sorted(el["rank"]) == list(range(1, len(el) + 1))
+
+
+def test_old_method_is_still_available(inputs):
+    s = score_subzones(inputs, W, "Stable", CFG, CFG["ranking_old"])
+    el = s[s["eligible"]]
+    assert np.allclose(el["priority"], el["risk"] * el["vulnerable"], atol=0.051)
+    assert list(el.sort_values("rank")["priority"]) == sorted(el["priority"], reverse=True)
+    assert el["spread"].min() == 0 and not el["cluster_override"].any()
+
+
+@pytest.fixture
+def with_big_cluster(inputs):
+    df = inputs.copy()
+    df["max_cluster_cases_near"] = 0
+    df.loc[20, ["max_cluster_cases_near", "spread_raw", "rain_mm", "vulnerable"]] = [99, 90.0, 1.0, 50]  # low rain, few people
+    df.loc[21, "max_cluster_cases_near"] = 9  # just under the threshold
+    df.loc[22, ["max_cluster_cases_near", "spread_raw", "rain_mm", "temp_c", "vulnerable"]] = [10, 0.1, 1.0, 20.0, 5]  # at the threshold, weak otherwise
+    return df
+
+
+def test_cluster_override_is_high_and_listed_first(with_big_cluster):
+    s = score_subzones(with_big_cluster, W, "Stable", CFG)
+    assert s.loc[20, "cluster_override"] and s.loc[22, "cluster_override"] and not s.loc[21, "cluster_override"]
+    assert s.loc[20, "band"] == "High" and s.loc[22, "band"] == "High"
+    assert {s.loc[20, "rank"], s.loc[22, "rank"]} == {1, 2}
+
+
+def test_no_low_band_above_an_override_and_band_first_sort(with_big_cluster):
+    s = score_subzones(with_big_cluster, W, "Stable", CFG)
+    el = s[s["eligible"]].sort_values("rank")
+    assert list(el["band"]) == sorted(el["band"], key={"High": 0, "Elevated": 1, "Low": 2}.get)
+    high = el[el["band"] == "High"]
+    non_override = high[~high["cluster_override"]]
+    assert list(non_override["priority"]) == sorted(non_override["priority"], reverse=True)
+    assert high["cluster_override"].iloc[:2].all()
+
+
+def test_overrides_use_up_the_high_quota(with_big_cluster):
+    s = score_subzones(with_big_cluster, W, "Stable", CFG)
+    n = s["eligible"].sum()
+    assert (s["band"] == "High").sum() == int(CFG["scoring"]["bands"]["Stable"]["high"] * n + 0.5)
+
+
+def test_override_can_be_switched_off(with_big_cluster):
+    off = {**CFG["ranking"], "override_cases": None}
+    s = score_subzones(with_big_cluster, W, "Stable", CFG, off)
+    assert not s["cluster_override"].any()
 
 
 def test_percentile_rank_bounds():

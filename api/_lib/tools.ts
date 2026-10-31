@@ -12,7 +12,7 @@ export const TOOLS: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'rank_areas',
-      description: 'List residential subzones ranked by inspection priority (risk index x seniors and children). Use first to see the candidates.',
+      description: 'List residential subzones in island-wide inspection order: large nearby clusters first, then band, then priority (risk squared x square root of seniors and children). Use first to see the candidates.',
       parameters: {
         type: 'object',
         properties: {
@@ -50,7 +50,7 @@ export const TOOLS: ChatCompletionTool[] = [
 
 const pick = (a: Area) => ({
   subzone_id: a.subzone_id, subzone: a.subzone, planning_area: a.planning_area, region: a.region.replace(' REGION', ''),
-  rank: a.rank, band: a.band, risk: a.risk, seniors_and_children: a.vulnerable,
+  rank: a.rank, band: a.band, risk: a.risk, large_cluster_override: Boolean(a.cluster_override), seniors_and_children: a.vulnerable,
   clusters_within_1km: a.clusters_within_1km, cluster_cases_within_1km: a.cluster_cases_within_1km,
   nearest_cluster_km: a.nearest_cluster_km, rainfall_mm_2_to_8_weeks_ago: a.rain_mm, rank_change_vs_last_week: a.rank_change,
 })

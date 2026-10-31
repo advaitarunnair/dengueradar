@@ -42,6 +42,7 @@ export default function SubzoneCard({ props, scored, showChange, onClose }: Prop
         <>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <BandBadge band={scored.band} />
+            {props.cluster_override && <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-ink"><span aria-hidden>▲</span> Large cluster nearby</span>}
             <span className="text-sm text-ink">Rank <strong>{scored.rank}</strong></span>
             {showChange && <span className="text-sm"><RankChange change={props.rank_change} /></span>}
           </div>
@@ -57,7 +58,7 @@ export default function SubzoneCard({ props, scored, showChange, onClose }: Prop
             <Bar label="Rainfall 2 to 8 weeks ago" value={props.rain} detail={`${num(Math.round(props.rain_mm))} mm`} />
             <Bar label="Temperature, last 4 weeks" value={props.temp} detail={`${props.temp_c.toFixed(1)} °C`} />
           </div>
-          <p className="mt-2 text-xs text-ink-3">Bars show the percentile among ranked subzones. Weather from {props.rain_mm_station} (rain) and {props.temp_c_station} (temperature).</p>
+          <p className="mt-2 text-xs text-ink-3">Cluster bar: log-scaled pressure relative to the highest subzone. Rain and temperature bars: percentile among ranked subzones. Weather from {props.rain_mm_station} (rain) and {props.temp_c_station} (temperature).</p>
         </>
       ) : (
         <p className="mt-3 text-sm text-ink-2">Not ranked: fewer than 100 residents ({num(props.residents)}).</p>
