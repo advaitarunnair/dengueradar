@@ -16,5 +16,8 @@
       "path": "/api/cron/weekly-plan",
       "schedule": "30 22 * * *"
     }
+  ],
+  "regions": [
+    "sin1"
   ]
 }
