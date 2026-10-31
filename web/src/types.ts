@@ -127,11 +127,12 @@ export interface Meta {
 
 export interface MetricRow {
   n: number
-  mae: number
-  mape: number
+  mae: number | null
+  mape: number | null
   direction_accuracy: number | null
 }
 export type ModelName = 'model' | 'persistence' | 'seasonal'
+export type MethodName = ModelName | 'ratio' | 'blend_level' | 'blend_ratio' | 'trend'
 
 export interface ModelEval {
   generated_at: string
@@ -142,7 +143,9 @@ export interface ModelEval {
   test: { first_target_week: string; last_target_week: string; n_weeks: number }
   outbreak_threshold_cases: number
   case_sources: { moh_bulletin: [string, string]; nea_page: [string, string] | null }
-  metrics: Record<'all_test_weeks' | 'outbreak_weeks', Record<ModelName, MetricRow>>
+  metrics: Record<'all_test_weeks' | 'outbreak_weeks', Partial<Record<MethodName, MetricRow>> & Record<ModelName, MetricRow>>
+  method_names?: Partial<Record<MethodName, string>>
+  experiments?: { adopted: MethodName | null; beat_persistence_on_test_mae: MethodName[]; settings: Record<string, { alpha: number }> }
   features: { name: string; label: string }[]
 }
 
@@ -150,6 +153,8 @@ export interface ForecastPoint {
   epi_week: string
   actual: number
   model: number
+  ratio?: number
+  blend?: number
   persistence: number
   seasonal: number | null
 }

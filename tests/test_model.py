@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 
 from common import load_config
-from train_model import HORIZON, build_features, make_dataset, split
+import lightgbm as lgb
+
+from train_model import HORIZON, build_features, feature_names, make_dataset, predict_cases, split
 
 
 @pytest.fixture
@@ -51,3 +53,15 @@ def test_split_is_time_ordered_without_overlap(weekly):
     assert (test["target_year"] > cfg["forecast"]["train_end_year"]).all()
     # every training feature row is observed before the first test target week
     assert val.index.max() < test["target_week"].min()
+
+
+def test_blend_mixes_model_and_persistence(weekly):
+    d = make_dataset(weekly).dropna(subset=feature_names())
+    X = d[feature_names()]
+    booster = lgb.train(dict(objective="regression", verbose=-1, seed=1), lgb.Dataset(X, d["actual"]), num_boost_round=3)
+    bundle = {"model_str": booster.model_to_string(), "features": feature_names(), "target_mode": "delta"}
+    full = predict_cases(bundle, X)
+    half = predict_cases({**bundle, "blend_alpha": 0.5}, X)
+    persistence = np.expm1(X["logcases_lag0"].to_numpy())
+    assert np.allclose(half, np.clip(0.5 * full + 0.5 * persistence, 0, None))
+    assert np.allclose(predict_cases({**bundle, "blend_alpha": 0.0}, X), persistence)

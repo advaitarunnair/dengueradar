@@ -33,6 +33,24 @@
     "mape": 37.24081316097851,
     "direction_accuracy": 0.5868945868945868
    },
+   "ratio": {
+    "n": 353,
+    "mae": 79.59082786996197,
+    "mape": 31.27025626781715,
+    "direction_accuracy": 0.6068376068376068
+   },
+   "blend_level": {
+    "n": 353,
+    "mae": 115.19692219450297,
+    "mape": 37.24081316097851,
+    "direction_accuracy": 0.5868945868945868
+   },
+   "blend_ratio": {
+    "n": 353,
+    "mae": 76.84923710038228,
+    "mape": 30.05111282237874,
+    "direction_accuracy": 0.6068376068376068
+   },
    "persistence": {
     "n": 353,
     "mae": 87.45609065155807,
@@ -44,6 +62,12 @@
     "mae": 335.75637393767704,
     "mape": 219.8250322940689,
     "direction_accuracy": 0.5128205128205128
+   },
+   "trend": {
+    "n": 353,
+    "mae": null,
+    "mape": null,
+    "direction_accuracy": 0.5902578796561605
    }
   },
   "outbreak_weeks": {
@@ -52,6 +76,24 @@
     "mae": 292.893230063039,
     "mape": 33.269143597426506,
     "direction_accuracy": 0.7281553398058253
+   },
+   "ratio": {
+    "n": 104,
+    "mae": 176.5599625913906,
+    "mape": 22.25029551683115,
+    "direction_accuracy": 0.7475728155339806
+   },
+   "blend_level": {
+    "n": 104,
+    "mae": 292.893230063039,
+    "mape": 33.269143597426506,
+    "direction_accuracy": 0.7281553398058253
+   },
+   "blend_ratio": {
+    "n": 104,
+    "mae": 170.40743990346374,
+    "mape": 21.854008233183418,
+    "direction_accuracy": 0.7475728155339806
    },
    "persistence": {
     "n": 104,
@@ -64,6 +106,12 @@
     "mae": 472.4807692307692,
     "mape": 65.16936572595196,
     "direction_accuracy": 0.5339805825242718
+   },
+   "trend": {
+    "n": 104,
+    "mae": null,
+    "mape": null,
+    "direction_accuracy": 0.696078431372549
    }
   }
  },
@@ -259,5 +307,41 @@
    "name": "week_cos",
    "label": "Time of year (seasonality)"
   }
- ]
+ ],
+ "method_names": {
+  "model": "LightGBM (current production)",
+  "ratio": "LightGBM, ratio target",
+  "blend_level": "Blend: LightGBM + persistence",
+  "blend_ratio": "Blend: ratio + persistence",
+  "persistence": "Persistence",
+  "seasonal": "Seasonal naive",
+  "trend": "Trend continues (direction only)"
+ },
+ "experiments": {
+  "generated_at": "2026-10-31T15:41:42+08:00",
+  "settings": {
+   "model": {
+    "mode": "level",
+    "num_leaves": 8,
+    "min_data_in_leaf": 20,
+    "rounds": 645,
+    "val_mae": 75.13497874041181,
+    "alpha": 1.0
+   },
+   "ratio": {
+    "mode": "delta",
+    "num_leaves": 15,
+    "min_data_in_leaf": 20,
+    "rounds": 296,
+    "val_mae": 79.23593257699761,
+    "alpha": 0.85
+   }
+  },
+  "beat_persistence_on_test_mae": [
+   "ratio",
+   "blend_ratio"
+  ],
+  "adopted": "blend_ratio",
+  "selection": "Hyperparameters and blend weights chosen on the last 52 training weeks only."
+ }
 }

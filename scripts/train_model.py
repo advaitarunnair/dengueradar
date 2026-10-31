@@ -110,7 +110,10 @@ def predict_cases(bundle: dict, X: pd.DataFrame) -> np.ndarray:
     raw = booster.predict(X[bundle["features"]])
     if bundle["target_mode"] == "delta":
         raw = raw + X["logcases_lag0"].to_numpy()
-    return np.clip(np.expm1(raw), 0, None)
+    pred = np.expm1(raw)
+    if "blend_alpha" in bundle:  # blend with persistence (cases this week); the weight was chosen on validation data
+        pred = bundle["blend_alpha"] * pred + (1 - bundle["blend_alpha"]) * np.expm1(X["logcases_lag0"].to_numpy())
+    return np.clip(pred, 0, None)
 
 
 def metrics(actual, pred, current) -> dict:

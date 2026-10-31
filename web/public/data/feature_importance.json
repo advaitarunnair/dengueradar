@@ -1,42 +1,42 @@
 [
  {
-  "label": "Cases this week",
-  "importance": 0.5517
- },
- {
-  "label": "Average cases over the last 4 weeks",
-  "importance": 0.1471
- },
- {
-  "label": "Cases 1 week ago",
-  "importance": 0.1227
- },
- {
   "label": "Time of year (seasonality)",
-  "importance": 0.0294
- },
- {
-  "label": "Trend in cases over the last 4 weeks",
-  "importance": 0.0262
- },
- {
-  "label": "Rainfall 2 weeks ago",
-  "importance": 0.0131
- },
- {
-  "label": "Mean temperature 2 to 8 weeks ago",
-  "importance": 0.0117
- },
- {
-  "label": "Mean temperature 2 weeks ago",
-  "importance": 0.0114
+  "importance": 0.1387
  },
  {
   "label": "Cases 3 weeks ago",
-  "importance": 0.0101
+  "importance": 0.0924
  },
  {
-  "label": "Rainfall 8 weeks ago",
-  "importance": 0.008
+  "label": "Cases this week",
+  "importance": 0.0672
+ },
+ {
+  "label": "Mean temperature 2 weeks ago",
+  "importance": 0.0614
+ },
+ {
+  "label": "Average cases over the last 4 weeks",
+  "importance": 0.0585
+ },
+ {
+  "label": "Rainfall 2 weeks ago",
+  "importance": 0.0551
+ },
+ {
+  "label": "Rainfall 7 weeks ago",
+  "importance": 0.0497
+ },
+ {
+  "label": "Trend in cases over the last 4 weeks",
+  "importance": 0.0427
+ },
+ {
+  "label": "Rainfall 3 weeks ago",
+  "importance": 0.0391
+ },
+ {
+  "label": "Cases 1 week ago",
+  "importance": 0.0387
  }
 ]

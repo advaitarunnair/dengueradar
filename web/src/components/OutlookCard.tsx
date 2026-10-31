@@ -47,8 +47,7 @@ export default function OutlookCard({ meta }: { meta: Meta }) {
         </div>
       </div>
       <p className="mt-3 text-xs text-ink-2">
-        Outlook is Rising or Falling when the forecast is at least {meta.outlook_threshold_pct}% above or below current cases. On
-        unseen years the model did not beat a simple "same as this week" baseline, so read it as indicative.{' '}
+        Outlook is Rising or Falling when the forecast is at least {meta.outlook_threshold_pct}% above or below current cases. Read it as indicative: its lead over a simple “same as this week” rule on unseen years is modest.{' '}
         <Link to="/model" className="font-medium text-accent underline">See how it performs</Link>
       </p>
       {meta.case_data.manual_topup_used && (

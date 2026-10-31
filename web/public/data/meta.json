@@ -1,33 +1,33 @@
 {
- "generated_at": "2026-10-31T15:31:30+08:00",
+ "generated_at": "2026-10-31T15:41:43+08:00",
  "epi_week": "2026-W43",
  "current_cases": 61,
  "case_week": "2026-W42",
- "forecast_cases": 61,
+ "forecast_cases": 59,
  "forecast_week": "2026-W46",
- "pct_change": -0.4,
+ "pct_change": -3.4,
  "outlook": "Stable",
  "drivers": [
   {
-   "label": "Cases this week",
-   "value": "61",
+   "label": "Time of year (seasonality)",
+   "value": "",
    "direction": "down",
-   "contribution": -0.5971,
-   "text": "Cases this week (61) are below typical levels, pulling the forecast down"
+   "contribution": -0.075,
+   "text": "The time of year is pulling the forecast down"
   },
   {
-   "label": "Average cases over the last 4 weeks",
-   "value": "67",
-   "direction": "down",
-   "contribution": -0.2015,
-   "text": "Average cases over the last 4 weeks (67) is below typical levels, pulling the forecast down"
+   "label": "Cases 3 weeks ago",
+   "value": "71",
+   "direction": "up",
+   "contribution": 0.0635,
+   "text": "Cases 3 weeks ago (71) are below typical levels, pushing the forecast up"
   },
   {
-   "label": "Cases 1 week ago",
-   "value": "60",
+   "label": "Mean temperature 2 weeks ago",
+   "value": "29.7 \u00b0C",
    "direction": "down",
-   "contribution": -0.1458,
-   "text": "Cases 1 week ago (60) are below typical levels, pulling the forecast down"
+   "contribution": -0.0603,
+   "text": "Mean temperature 2 weeks ago (29.7 \u00b0C) is above typical levels, pulling the forecast down"
   }
  ],
  "outlook_threshold_pct": 15.0,
