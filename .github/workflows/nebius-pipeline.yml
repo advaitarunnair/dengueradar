@@ -1,0 +1,51 @@
+name: Nebius pipeline
+
+# Nebius Serverless AI runs the pipeline; Nebius jobs have no built-in schedule, so this workflow is the timer.
+# Does nothing until the repository variable NEBIUS_ENABLED is 'true'. Setup: docs/nebius-jobs.md.
+on:
+  schedule:
+    - cron: "0 22 * * *" # every day 06:00 SGT
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  run:
+    if: vars.NEBIUS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push the pipeline image
+        run: |
+          IMAGE="ghcr.io/$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')-pipeline:latest"
+          docker build -f job/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+      - name: Install the Nebius CLI
+        run: |
+          curl -sSL https://artifacts.nebius.cloud/cli/install.sh | bash
+          echo "$HOME/.nebius/bin" >> "$GITHUB_PATH"
+      - name: Start the Nebius job
+        env:
+          NEBIUS_SA_PRIVATE_KEY: ${{ secrets.NEBIUS_SA_PRIVATE_KEY }}
+        run: |
+          printf '%s' "$NEBIUS_SA_PRIVATE_KEY" > "$RUNNER_TEMP/sa.pem"
+          nebius profile create --endpoint api.nebius.cloud --service-account-id "${{ vars.NEBIUS_SA_ID }}" \
+            --public-key-id "${{ vars.NEBIUS_PUBLIC_KEY_ID }}" --private-key-file "$RUNNER_TEMP/sa.pem" \
+            --profile ci --parent-id "${{ vars.NEBIUS_PROJECT_ID }}"
+          nebius ai job create --name "dengueradar-pipeline-$(date -u +%Y%m%d)" --image "$IMAGE" \
+            --env "GITHUB_REPO=$GITHUB_REPOSITORY" \
+            --env-secret "NEBIUS_API_KEY=${{ vars.NEBIUS_SECRET_NEBIUS_API_KEY }}" \
+            --env-secret "DATABASE_URL=${{ vars.NEBIUS_SECRET_DATABASE_URL }}" \
+            --env-secret "TAVILY_API_KEY=${{ vars.NEBIUS_SECRET_TAVILY_API_KEY }}" \
+            --env-secret "GITHUB_TOKEN=${{ vars.NEBIUS_SECRET_GITHUB_TOKEN }}" \
+            --platform "${{ vars.NEBIUS_PLATFORM }}" --preset "${{ vars.NEBIUS_PRESET }}" \
+            --subnet-id "${{ vars.NEBIUS_SUBNET_ID }}" --disk-size 30Gi --timeout 30m

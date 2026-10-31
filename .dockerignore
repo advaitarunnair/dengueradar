@@ -1,6 +1,5 @@
 *
 !package.json
 !package-lock.json
-!api/**
-!data/history/**
-!job/**
+!requirements.txt
+!job/pipeline.sh

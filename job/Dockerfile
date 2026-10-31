@@ -1,9 +1,10 @@
-# DengueRadar weekly plan job for Nebius Serverless AI (CPU). Node 24 runs the TypeScript sources directly.
+# DengueRadar daily pipeline for Nebius Serverless AI (CPU). See docs/nebius-jobs.md.
+# The image holds dependencies only; job/pipeline.sh clones the latest repo when it runs.
 FROM node:24-slim
-WORKDIR /app
-COPY package.json package-lock.json ./
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates python3 python3-venv libgomp1 && rm -rf /var/lib/apt/lists/*
+WORKDIR /deps
+COPY package.json package-lock.json requirements.txt ./
 RUN npm ci --omit=dev --ignore-scripts
-COPY api ./api
-COPY data/history ./data/history
-COPY job ./job
-CMD ["node", "job/weekly_plan.ts"]
+RUN python3 -m venv /deps/venv && /deps/venv/bin/pip install --no-cache-dir -r requirements.txt
+COPY job/pipeline.sh /deps/pipeline.sh
+CMD ["bash", "/deps/pipeline.sh"]

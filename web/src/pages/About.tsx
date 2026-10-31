@@ -94,8 +94,14 @@ priority = risk^${r.priority_risk_exponent} × (residents aged 65+ and under 15)
           ))}
         </ul>
       </Card>
-      <Card title="How the data stays current">
-        <p className="max-w-3xl text-sm leading-relaxed text-ink">A scheduled job rebuilds the clusters, weather, forecast and ranking every day at 06:00 SGT and republishes this site. The <strong>Refresh data</strong> button in the header loads the newest published run without reloading the page. It cannot start a new run itself: this site has no server, and starting a run needs a maintainer's GitHub access.</p>
+      <Card title="What runs where">
+        <ul className="max-w-3xl list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-ink">
+          <li><strong>The app</strong> is hosted on Vercel: a static web page plus serverless API routes under /api, which call the Nemotron models and read and write a Neon Postgres database.</li>
+          <li><strong>The daily data job</strong> rebuilds clusters, weather, forecast and ranking at 06:00 Singapore time and publishes them with a commit, which redeploys the site. It runs on GitHub Actions; a Nebius Serverless Job version is built and waiting for cloud setup.</li>
+          <li><strong>The weekly default plan</strong> is drafted once by a scheduled call, so visits never spend tokens on it.</li>
+          <li><strong>The Refresh data button</strong> in the header loads the newest published data without reloading the page. It does not start a new data run.</li>
+          <li><strong>Your changes are private to you.</strong> Re-plans, chat, reports and photos belong to your browser session; <strong>Reset demo</strong> removes them.</li>
+        </ul>
       </Card>
       <Card title="Disclaimer">
         <Disclaimer />
