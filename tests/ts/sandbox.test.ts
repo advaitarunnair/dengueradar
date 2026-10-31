@@ -6,13 +6,15 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { PGlite } from '@electric-sql/pglite'
+import OpenAI, { APIConnectionTimeoutError, APIError } from 'openai'
 import { useTestDb } from '../../api/_lib/db.ts'
 import { ensureDemoData, generateDemoInspections, DEMO_WEEKS } from '../../api/_lib/demo.ts'
 import { currentWeek, dateOverride, sgToday } from '../../api/_lib/epi.ts'
-import { premisesWithHistory, saveInspection } from '../../api/_lib/inspect.ts'
+import { checklist, premisesWithHistory, saveInspection } from '../../api/_lib/inspect.ts'
+import { complete, ModelBusyError, REQUEST_LIMITS, useTestClient } from '../../api/_lib/llm.ts'
 import { confirmPlan, copyToSession, currentPlan, ensureCanonicalPlan, planById, resetSession, unconfirmPlan, visiblePlan } from '../../api/_lib/plans.ts'
 import { savePlan, type Plan } from '../../api/_lib/planner.ts'
-import { defaultReviewWeek, repeatOffenders, weekStats } from '../../api/_lib/review.ts'
+import { defaultReviewWeek, explainFlags, repeatOffenders, supervisorSummary, weekStats } from '../../api/_lib/review.ts'
 
 process.env.DEMO_DATE = '2026-12-08'
 delete process.env.VERCEL_ENV
@@ -142,4 +144,42 @@ test('Reset demo returns a visitor to the canonical state and leaves others alon
   assert.equal((await visiblePlan(B))?.status, 'confirmed', 'B keeps their confirmed plan')
   const copy = await copyToSession((await visiblePlan(A))!, A)
   assert.equal(copy.session_id, A)
+})
+
+test('a stalled model gives up before the function limit and the labelled fallbacks show', async () => {
+  const seen: { timeout: number; maxRetries: number }[] = []
+  const stalled = { chat: { completions: { create: async (_: unknown, limits: { timeout: number; maxRetries: number }) => {
+    seen.push(limits)
+    throw new APIConnectionTimeoutError()
+  } } } }
+  useTestClient(stalled as unknown as OpenAI)
+  try {
+    const session = 'session-stall-3333'
+    const ck = await checklist(session, 1, true)
+    assert.ok(ck.items.length > 0, 'generic checklist still shows')
+    assert.match(ck.notice ?? '', /didn’t respond in time.*generic checklist/)
+    const week = await defaultReviewWeek(session)
+    const offenders = await repeatOffenders(session)
+    const brief = await supervisorSummary(session, await weekStats(week, session), offenders, true)
+    assert.match(brief.notice ?? '', /didn’t respond in time/)
+    assert.ok(brief.sections.length > 0, 'computed counts still show')
+    assert.deepEqual(await explainFlags(session, offenders, true), {})
+    assert.ok(seen.length >= 3)
+    for (const { timeout, maxRetries } of Object.values(REQUEST_LIMITS).filter((l) => l !== REQUEST_LIMITS.ULTRA)) {
+      assert.ok(timeout * (maxRetries + 1) < 100_000, 'every attempt fits inside the 120 s function limit')
+    }
+  } finally {
+    useTestClient(null)
+  }
+})
+
+test('a rejected request stays a real error, not a "try again" message', async () => {
+  const rejected = { chat: { completions: { create: async () => { throw new APIError(400, undefined, 'bad request', new Headers()) } } } }
+  useTestClient(rejected as unknown as OpenAI)
+  try {
+    await assert.rejects(complete({ model: 'NANO', endpoint: 'test', session: 'session-stall-4444', maxTokens: 1, messages: [] }),
+      (e) => e instanceof APIError && !(e instanceof ModelBusyError))
+  } finally {
+    useTestClient(null)
+  }
 })
