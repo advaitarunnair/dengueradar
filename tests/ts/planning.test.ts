@@ -1,7 +1,7 @@
 /** Number rendering and capacity packing: pure logic, no database or model calls. */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import type { Area } from '../../api/_lib/data.ts'
+import { findArea, type Area } from '../../api/_lib/data.ts'
 import { allocateTeams, hasFigure, MAX_DETOUR_KM, renderReason, unsourcedClaim } from '../../api/_lib/planrender.ts'
 import type { Stop } from '../../api/_lib/routing.ts'
 
@@ -82,4 +82,9 @@ test('a serotype claim needs a cited source that says so', () => {
   assert.equal(unsourcedClaim(claim, 'Weather advisory for November'), true)
   assert.equal(unsourcedClaim(claim, 'NEA reports a rise in DENV-3 cases'), false)
   assert.equal(unsourcedClaim('Focus on the large active cluster.', ''), false)
+})
+
+test('an area the model returned without an id is not found, rather than crashing the plan', () => {
+  assert.equal(findArea(undefined as unknown as string), undefined)
+  assert.equal(findArea(''), undefined)
 })

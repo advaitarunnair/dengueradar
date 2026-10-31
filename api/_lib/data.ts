@@ -66,12 +66,13 @@ export function modelEval() {
   return JSON.parse(readFileSync(join(WEB_DATA, 'model_eval.json'), 'utf8'))
 }
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+const norm = (s: string) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 
 /** Find an area by subzone id or (fuzzy) name. */
 export function findArea(query: string): Area | undefined {
   const { areas } = load()
   const q = norm(query)
+  if (!q) return undefined // the fuzzy match below would otherwise accept the first area
   return areas.find((a) => a.subzone_id === query) ??
     areas.find((a) => norm(a.subzone) === q) ??
     areas.find((a) => norm(a.subzone).includes(q) || q.includes(norm(a.subzone)))
