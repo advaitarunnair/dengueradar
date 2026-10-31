@@ -20,13 +20,17 @@ export default function VerifierPanel({ plan }: { plan: Plan }) {
       </button>
       {open && (
         <div className="mt-2 space-y-3 rounded-lg border border-line bg-page p-3 text-xs text-ink-2">
-          <p>The agent chooses which facts matter for each area by naming data keys. Code then writes the numbers from that area’s own data, so a figure can’t land on the wrong area. Any text the model wrote containing a number is removed.</p>
+          <p>The agent chooses which facts matter for each area by naming data keys. Code then writes the numbers from that area’s own data, so a figure can’t land on the wrong area. Any text the model wrote containing a number is rewritten without it or removed, and listed here.</p>
           <div>
             <p className="font-semibold text-ink">Corrected in this version ({fixed})</p>
             {fixed === 0 && <p>Nothing needed correcting.</p>}
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {removed.map((r, i) => <li key={`s${i}`}><strong>Summary sentence removed:</strong> “{r}”</li>)}
-              {corrections.map((x, i) => <li key={`c${i}`}><strong>{titleCase(x.where)} removed:</strong> “{x.removed}”</li>)}
+              {corrections.map((x, i) => {
+                const rewritten = x.where.endsWith('rewritten; original')
+                const where = titleCase(x.where.replace(' rewritten; original', '').replace(/ (note|focus)$/, '')) + (x.where.includes(' focus') ? ' focus' : x.where.includes(' note') ? ' note' : '')
+                return <li key={`c${i}`}><strong>{where}</strong> {rewritten ? 'rewritten without figures. Original:' : 'removed:'} “{x.removed}”</li>
+              })}
             </ul>
           </div>
           {c.dropped.length > 0 && (

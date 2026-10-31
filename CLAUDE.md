@@ -10,12 +10,16 @@ Neon Postgres for state. Live: https://dengueradar.vercel.app
   Reasoning is OFF by default (`enable_thinking: false`); Ultra with reasoning on invented tools in testing.
 - `api/_lib/guard.ts` daily token cap + per-session limits (`llm_usage` table). Every model call must go through `complete()`.
 - `api/_lib/planner.ts` two-phase plan agent: Ultra researches with `tools.ts`, then decides in JSON from a code-built candidate table.
-  Code enforces capacity, team regions (no cross-island detours), routing (`routing.ts`) and number checks (`checks.ts`).
+  The model names data keys and writes number-free notes; `planrender.ts` renders the numbers and fits areas to team capacity (partial coverage, no cross-island detours).
+- `api/_lib/plans.ts` canonical weekly plan (once a week, `api/cron/weekly-plan.ts`) and per-visitor sandbox: plans, chat, reports and photos are scoped by session id. Never show one visitor another's rows.
+- `api/_lib/demo.ts` rolling demo inspections, seeded per premises and week. `api/_lib/epi.ts` `sgToday()` honours `DEMO_DATE` except in production.
 - `api/_lib/copilot.ts` Super routes questions vs re-plans; `inspect.ts` checklists (Nano) and reports (Super); `review.ts` SQL stats,
   briefing (Super), repeat offenders (SQL + Nano); `photos.ts` VL classification.
 - Endpoints: `api/plan.ts`, `api/copilot.ts`, `api/inspect.ts`, `api/review.ts`, `api/photos.ts`, `api/health.ts`.
 - `db/schema.sql` (run `npm run db:migrate`); demo data: `scripts/make_demo_data.py` -> `db/demo_seed.json` -> `npm run db:seed-demo`.
 - Local: `vercel dev` (reads `.env` only, so `DATABASE_URL` must be copied there from `.env.local`). `npm run check:nebius`.
+- CAUTION: `.env` points at the production database. To test safely use `scripts/dev_local.ts` (real handlers, throwaway PGlite database) and `npm test`.
+- Ranking lives in `scripts/build_scores.py` and `web/src/lib/scoring.ts`; keep them in step (`tests/ts/scoring.test.ts` checks parity). Options are in `config.yaml` `ranking:`.
 - Rule: any number an LLM writes must be verifiable against data passed to it; unverifiable text is removed or flagged, never shown silently.
 - Rule: premises and inspection history are DEMO data and must stay labelled as such in the UI.
 
@@ -25,7 +29,8 @@ Neon Postgres for state. Live: https://dengueradar.vercel.app
 - `scripts/train_model.py` run once: train + evaluate -> `models/forecast.joblib`, `web/public/data/{model_eval,forecast_test,feature_importance}.json`
 - `scripts/build_scores.py` weekly job -> `web/public/data/{scores.geojson,clusters.geojson,meta.json}`, `data/history/YYYY-WW.json`
 - `web/` React + Vite + TypeScript + Tailwind, HashRouter, base `/` on Vercel; static data from `web/public/data`, Copilot via `/api`
-- `scripts/ranking_check.py` early check of the ranking vs new clusters (`data/history/cluster_log.json`, `ranking_check.json`)
+- `scripts/ranking_check.py` early check of old and new ranking vs new clusters; `scripts/compare_ranking.py` side-by-side top 20; `scripts/forecast_experiments.py` all forecast methods, sets `models/forecast.joblib` if one beats persistence
+- `job/` Nebius Serverless Job container (not yet deployed; `docs/nebius-jobs.md`)
 - `config.yaml` verified dataset IDs/URLs, scoring weights, thresholds
 
 ## Commands
