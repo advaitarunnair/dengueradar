@@ -133,7 +133,9 @@ export default function Review() {
                 <span className="text-xs text-ink-2">{PREMISES_TYPE[o.premises_type] ?? o.premises_type} · {titleCase(o.subzone)}</span>
               </div>
               <p className="mt-1 text-sm text-ink">Breeding in {o.weeks_with_breeding} week{o.weeks_with_breeding === 1 ? '' : 's'} ({o.breeding_weeks.map((w) => w.replace('2026-', '')).join(', ')}); last on {dateLabel(o.last_breeding)}. Habitats: {o.habitats ?? 'n/a'}.</p>
-              {flags?.[o.premises_id] && <p className="mt-0.5 text-sm text-ink-2">{flags[o.premises_id]}</p>}
+              {flags?.[o.premises_id]
+                ? <p className="mt-0.5 text-sm text-ink-2">{flags[o.premises_id]}</p>
+                : (o.habitat_actions?.length ?? 0) > 0 && <p className="mt-0.5 text-sm text-ink-2">{o.habitat_actions!.join(' ')}</p>}
               <p className="mt-0.5 text-xs font-medium text-ink">→ {o.escalation}</p>
             </li>
           ))}

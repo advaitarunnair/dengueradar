@@ -25,6 +25,19 @@ function styleFor(f: SubzoneFeature, scored: Map<string, ScoredSubzone>, selecte
   return { ...base, color: selected ? '#14181d' : '#ffffff', weight: selected ? 3 : 1, opacity: selected ? 1 : 0.9 }
 }
 
+/** Frame the map on Singapore's subzones themselves, so it opens on the island rather than Johor. */
+function islandBounds(scores: ScoresCollection): [[number, number], [number, number]] {
+  let south = 90, north = -90, west = 180, east = -180
+  const visit = (c: unknown): void => {
+    if (typeof (c as number[])[0] === 'number') {
+      const [lon, lat] = c as number[]
+      south = Math.min(south, lat); north = Math.max(north, lat); west = Math.min(west, lon); east = Math.max(east, lon)
+    } else (c as unknown[]).forEach(visit)
+  }
+  scores.features.forEach((f) => visit(f.geometry.coordinates))
+  return [[south, west], [north, east]]
+}
+
 function FlyToSelected({ layerRef, selectedId, flyKey }: { layerRef: React.RefObject<LGeoJSON | null>; selectedId: string | null; flyKey: number }) {
   const map = useMap()
   useEffect(() => {
@@ -72,7 +85,7 @@ export default function RiskMap({ scores, clusters, scored, selectedId, flyKey, 
 
   return (
     <div className="relative">
-      <MapContainer bounds={[[1.22, 103.62], [1.47, 104.03]]} minZoom={10} maxZoom={17} scrollWheelZoom className="h-[420px] w-full rounded-lg sm:h-[520px]">
+      <MapContainer bounds={islandBounds(scores)} boundsOptions={{ padding: [8, 8] }} zoomSnap={0.25} minZoom={10} maxZoom={17} scrollWheelZoom className="h-[420px] w-full rounded-lg sm:h-[520px]">
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

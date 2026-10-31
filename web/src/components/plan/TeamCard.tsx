@@ -35,13 +35,10 @@ export default function TeamCard({ plan, team, onSelect, selectedId }: { plan: P
                 <span className="font-medium text-ink">{titleCase(a.subzone)}</span>
                 <span className="text-xs text-ink-3">{titleCase(a.planning_area)}</span>
                 <BandBadge band={a.band} />
-                <span className="text-xs text-ink-2">Rank {a.rank} · {a.premises} premises · {num(a.vulnerable)} seniors and children</span>
+                <span className="text-xs text-ink-2">Rank {a.rank} · {a.premises_total && a.premises_total > a.premises ? `${a.premises} of ${a.premises_total} premises (partial)` : `${a.premises} premises`} · {num(a.vulnerable)} seniors and children</span>
               </div>
               <p className="mt-1 pl-8 text-sm text-ink">
                 {a.reason}
-                {a.reason_source === 'data' && (
-                  <span className="ml-1 text-xs text-ink-3" title="The agent's wording used a number that is not this area's data, so DengueRadar shows the area's facts instead.">(facts from data)</span>
-                )}
               </p>
               {a.focus && <p className="mt-0.5 pl-8 text-xs text-ink-2"><span aria-hidden>🔎</span> {a.focus}</p>}
             </button>

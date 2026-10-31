@@ -50,6 +50,20 @@ export async function weekStats(week: string, session: string) {
 }
 export type WeekStats = Awaited<ReturnType<typeof weekStats>>
 
+/** Practical next step for each habitat type found breeding. Fixed rules, not model output. */
+const ACTIONS: [RegExp, string][] = [
+  [/roof gutter/i, 'Roof gutters: engage the owner or managing agent to clear and repair them.'],
+  [/gully trap/i, 'Gully traps: put them on a regular treatment schedule.'],
+  [/scupper drain|^drain|, drain| drain/i, 'Drains: clear blockages and flush them on a schedule.'],
+  [/floor slab|lift well|open trench|plastic sheet|drum/i, 'Worksite: require the contractor to pump out, cover or remove standing water daily.'],
+  [/flower pot|pail|vase|ornamental|planter|bamboo/i, 'Household containers: advise occupiers on a weekly tip-and-scrub, and cap bamboo pole holders.'],
+  [/discarded|crate/i, 'Discarded items: arrange removal with the occupier or town council.'],
+  [/puddle|tree hole/i, 'Ponding: fill or drain the low spots with the site manager.'],
+]
+function habitatActions(habitats: string | null): string[] {
+  return habitats ? ACTIONS.filter(([re]) => re.test(habitats)).map(([, a]) => a) : []
+}
+
 /** Premises with breeding in 2+ different weeks of the last 8, or 2+ breeding habitats in one visit. */
 export async function repeatOffenders(session: string) {
   const today = sgToday()
@@ -79,7 +93,7 @@ export async function repeatOffenders(session: string) {
       : level === 'repeat'
         ? 'Re-inspect within 7 days and issue a written advisory to the occupier or managing agent.'
         : 'Look for a structural cause (blocked drains, gutters) and refer to the town council or managing agent.'
-    return { ...r, subzone: subzoneName(r.subzone_id), breeding_weeks: (r.breeding_weeks ?? []).sort(), level, escalation }
+    return { ...r, subzone: subzoneName(r.subzone_id), breeding_weeks: (r.breeding_weeks ?? []).sort(), level, escalation, habitat_actions: habitatActions(r.habitats) }
   })
 }
 export type Offender = Awaited<ReturnType<typeof repeatOffenders>>[number]
@@ -108,7 +122,7 @@ export async function supervisorSummary(session: string, stats: WeekStats, offen
     model: 'SUPER', endpoint: 'summary', session, maxTokens: 900, json: true, temperature: 0.2,
     messages: [
       { role: 'system', content: `You write the weekly dengue inspection briefing for an NEA supervisor in Singapore.
-Use ONLY the numbers and names in the facts. Never calculate new numbers (no percentages, differences or totals that are not given). Compare this week with last week in words ("more", "fewer", "about the same").
+Write headline figures as placeholders, not digits, using these exactly: {{inspections}}, {{inspections_last_week}}, {{with_breeding}}, {{with_breeding_last_week}}, {{overdue}}, {{reinspect}}, {{repeat_sites}}, {{persistent_sites}}. Other numbers and names must be copied from the facts. Never calculate new numbers (no percentages, differences or totals that are not given). Compare this week with last week in words ("more", "fewer", "about the same").
 Be concise and operational. Note that inspection data in this prototype is demo data only if you mention data sources.
 Reply with ONLY JSON: {"sections": [{"title": "Headline", "points": ["..."]}, {"title": "Breeding found", "points": []}, {"title": "Trends vs last week", "points": []}, {"title": "Overdue actions", "points": []}, {"title": "Re-inspect next", "points": []}, {"title": "Repeat offenders", "points": []}]}
 Each section has 1 to 4 short points.` },
@@ -123,10 +137,17 @@ Each section has 1 to 4 short points.` },
   const ledger = new NumberLedger()
   ledger.add(facts)
   const removed: string[] = []
+  const values: Record<string, number> = {
+    inspections: stats.this_week.inspections, inspections_last_week: stats.last_week.inspections, with_breeding: stats.this_week.with_breeding,
+    with_breeding_last_week: stats.last_week.with_breeding, overdue: stats.overdue_follow_ups.total, reinspect: stats.reinspect.length,
+    repeat_sites: offenders.length, persistent_sites: offenders.filter((o) => o.level === 'persistent').length,
+  }
+  ledger.add(values)
+  const fill = (p: string) => p.replace(/\{\{(\w+)\}\}/g, (m, k: string) => (k in values ? String(values[k]) : m))
   const sections = (parsed.sections ?? []).map((s) => ({
-    title: String(s.title), points: (s.points ?? []).filter((p) => {
-      const ok = !ledger.unsupported(String(p)).length
-      if (!ok) removed.push(String(p))
+    title: String(s.title), points: (s.points ?? []).map((p) => fill(String(p))).filter((p) => {
+      const ok = !/\{\{/.test(p) && !ledger.unsupported(p).length
+      if (!ok) removed.push(p)
       return ok
     }),
   })).filter((s) => s.points.length)
@@ -162,11 +183,11 @@ export async function explainFlags(session: string, offenders: Offender[], refre
     r = await complete({
     model: 'NANO', endpoint: 'flags', session, maxTokens: 1200, json: true, temperature: 0.2,
     messages: [
-      { role: 'system', content: `For each flagged premises, write one plain sentence (max 30 words) for an NEA supervisor explaining why it is flagged and what the pattern suggests.
-Use only the given facts; copy numbers and weeks exactly; do not invent causes as facts (say "may" for possible causes).
+      { role: 'system', content: `For each flagged premises, write one plain, practical sentence (max 25 words) for an NEA supervisor on what the habitat pattern suggests and what to do about it, based on the action hints given.
+The page already shows the weeks and the flag level, so do not repeat them. Name the specific habitats. No numbers. Do not state causes as facts (say "may" for possible causes).
 Reply with ONLY JSON: {"explanations": [{"premises_id": 0, "text": ""}]}` },
       { role: 'user', content: JSON.stringify(list.map((o) => ({ premises_id: o.premises_id, name: o.name, type: o.premises_type, level: o.level,
-        weeks_with_breeding: o.weeks_with_breeding, breeding_weeks: o.breeding_weeks, max_breeding_habitats_in_one_visit: o.max_habitats_one_visit, habitats: o.habitats }))) },
+        weeks_with_breeding: o.weeks_with_breeding, breeding_weeks: o.breeding_weeks, max_breeding_habitats_in_one_visit: o.max_habitats_one_visit, habitats: o.habitats, action_hints: o.habitat_actions }))) },
     ],
     })
   } catch (e) {

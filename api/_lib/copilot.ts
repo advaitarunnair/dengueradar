@@ -87,15 +87,16 @@ async function answer(session: string, record: PlanRecord, question: string, his
   const planBrief = {
     constraints: plan.constraints,
     outlook: plan.outlook,
-    areas: plan.areas.map((a) => ({ order: a.order, subzone_id: a.subzone_id, subzone: a.subzone, team: a.team, rank: a.rank, band: a.band, premises: a.premises, reason: a.reason })),
-    teams: plan.teams.map((t) => ({ name: t.name, regions: t.regions, premises: t.premises, capacity: t.capacity })),
+    areas: plan.areas.map((a) => ({ order: a.order, subzone_id: a.subzone_id, subzone: a.subzone, team: a.team, rank: a.rank, band: a.band, premises: a.premises, premises_total: a.premises_total, reason: a.reason })),
+    teams: plan.teams.map((t) => ({ name: t.name, regions: t.regions, premises: t.premises, capacity: t.capacity, slots_left: t.capacity - t.premises })),
     left_out: plan.checks.dropped,
   }
   ledger.add(planBrief)
   const messages: ChatCompletionMessageParam[] = [
     { role: 'system', content: `You are DengueRadar Copilot, helping an NEA inspection officer understand this week's plan.
 Answer in at most 120 words, plainly. Use the tools to look up any area you discuss. Every number must come from the plan below or a tool result; never invent or calculate numbers.
-"rank" is the island-wide order: subzones within 1 km of a cluster of 10+ cases first (always band High), then by band (High, Elevated, Low), then priority = risk squared x square root of seniors and children. The forecast is island-wide only. The risk index is rule-based and unvalidated. Premises and inspections are demo data.
+"rank" is the island-wide order: subzones within 1 km of a cluster of 10+ cases first (always band High), then by band (High, Elevated, Low), then priority = risk squared x square root of seniors and children. The forecast is island-wide only, and the latest reported case count lags the current week. The risk index is rule-based and unvalidated. Premises and inspections are demo data.
+If asked why an area was cut or only partly covered, use "left_out", "premises_total" and "slots_left" for the exact reason; never just say capacity is limited. Use search_news only when the officer asks about news, serotypes or weather advisories, and name the source you used.
 Current plan: ${JSON.stringify(planBrief)}` },
     ...history.slice(-6).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     { role: 'user', content: question },
@@ -116,8 +117,10 @@ Current plan: ${JSON.stringify(planBrief)}` },
       messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
     }
   }
+  for (const src of runner.sources) ledger.add(`${src.title} ${src.snippet}`)
   const bad = ledger.unsupported(text)
-  return bad.length ? `${text}\n\n⚠ Not found in our data, please verify: ${bad.join(', ')}.` : text
+  const cited = runner.sources.length ? `\n\nSources searched:\n${runner.sources.map((x) => `${x.title}${x.published ? ` (${x.published.slice(0, 16)})` : ' (no date given)'}: ${x.url}`).join('\n')}` : ''
+  return `${text}${bad.length ? `\n\n⚠ Not found in our data, please verify: ${bad.join(', ')}.` : ''}${cited}`
 }
 
 export async function handleMessage(opts: Parameters<typeof handleMessageInner>[0]) {

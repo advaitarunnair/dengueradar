@@ -7,16 +7,17 @@ export interface PlanArea {
   order: number; subzone_id: string; subzone: string; planning_area: string; region: string
   rank: number; band: Band; risk: number; vulnerable: number
   clusters_within_1km: number; cluster_cases_within_1km: number; nearest_cluster_km: number | null
-  premises: number; reason: string; focus: string; team: string; lat: number; lon: number
-  reason_source?: 'agent' | 'data'
+  premises: number; premises_total?: number; reason: string; focus: string; team: string; lat: number; lon: number
+  factors?: string[]
 }
 export interface PlanTeam { name: string; regions: string[]; capacity: number; premises: number; subzone_ids: string[]; days: { day: number; stops: Stop[]; km: number }[] }
 export interface Plan {
   epi_week: string; generated_at: string; model: string; constraints: Constraints
   summary: string; areas: PlanArea[]; teams: PlanTeam[]
   context: { id: string; title: string; url: string; published: string | null; note: string }[]
+  context_queries?: { label: string; query: string; results: number }[]
   outlook: { current_cases: number; forecast_cases: number; outlook: string; case_week: string; forecast_week: string }
-  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; replaced?: { subzone: string; numbers: number[] }[]; removed_sentences?: string[] }
+  checks: { numbers_checked: number; unsupported: number[]; dropped: { subzone_id: string; why: string }[]; removed_sentences?: string[]; corrections?: { where: string; removed: string }[]; rendered?: { subzone: string; factors: string[]; text: string }[] }
   agent: { tool_calls: { name: string; args: string }[]; tokens: number; ms: number }
   changes?: { added: string[]; removed: string[]; moved: { subzone: string; from: string; to: string }[] }
 }
@@ -43,7 +44,8 @@ export function describeTool(name: string, args: string): string {
     case 'rank_areas': return `Looked up the top ${a.top_n ?? 20} priority subzones${a.region ? ` in ${a.region}` : ''}`
     case 'get_area_risk': return `Checked the risk breakdown for ${String(a.area ?? '').replace(/-/g, ' ')}`
     case 'get_area_history': return `Checked rank and inspection history for ${String(a.area ?? '').replace(/-/g, ' ')}`
-    case 'search_recent_context': return `Searched recent news: “${a.query ?? ''}”`
+    case 'search_recent_context':
+    case 'search_news': return `Searched recent news: “${a.query ?? ''}”`
     default: return name
   }
 }
@@ -90,7 +92,7 @@ export interface ReviewStats {
 export interface Offender {
   premises_id: number; name: string; premises_type: string; subzone_id: string; subzone: string; weeks_with_breeding: number
   breeding_weeks: string[]; max_habitats_one_visit: number; habitats: string | null; last_breeding: string; visits: number
-  level: 'persistent' | 'repeat' | 'multiple'; escalation: string
+  level: 'persistent' | 'repeat' | 'multiple'; escalation: string; habitat_actions?: string[]
 }
 export interface ReviewState { stats: ReviewStats; offenders: Offender[]; offenders_total: number; default_week: string; current_week: string }
 export interface Briefing { sections: { title: string; points: string[] }[]; removed: string[]; cached: boolean; notice?: string }

@@ -123,13 +123,22 @@ Reply with ONLY JSON: {"location": "", "habitats": [{"type": "", "location": "",
     ],
   })
   const d = parseJson<ReportDraft>(r.text)
-  const habitats = (d.habitats ?? []).map((h) => ({ type: String(h.type ?? 'other'), location: h.location ?? null, breeding: Boolean(h.breeding), count: Number.isFinite(Number(h.count)) && h.count !== null ? Number(h.count) : null }))
+  // A count must be in the inspector's notes (as a digit or word); otherwise it is cleared for them to fill in.
+  const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve']
+  const stated = new Set((notes.toLowerCase().match(/\d+/g) ?? []).map(Number))
+  WORDS.forEach((w, i) => { if (new RegExp(`\\b${w}\\b`).test(notes.toLowerCase())) stated.add(i) })
+  const missingCounts: string[] = []
+  const habitats = (d.habitats ?? []).map((h) => {
+    let count = Number.isFinite(Number(h.count)) && h.count !== null ? Number(h.count) : null
+    if (count !== null && !stated.has(count)) { missingCounts.push(`count for ${h.type}`); count = null }
+    return { type: String(h.type ?? 'other'), location: h.location ?? null, breeding: Boolean(h.breeding), count }
+  })
   return {
     location: d.location || data.premises.name, habitats,
     breeding_found: Boolean(d.breeding_found) || habitats.some((h) => h.breeding),
     actions_taken: d.actions_taken ?? '', follow_up_needed: Boolean(d.follow_up_needed) || habitats.some((h) => h.breeding),
     follow_up_due: /^\d{4}-\d{2}-\d{2}$/.test(String(d.follow_up_due)) ? d.follow_up_due : null,
-    summary: d.summary ?? '', missing: Array.isArray(d.missing) ? d.missing : [],
+    summary: d.summary ?? '', missing: [...(Array.isArray(d.missing) ? d.missing : []), ...missingCounts],
   }
 }
 

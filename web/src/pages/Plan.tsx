@@ -4,6 +4,7 @@ import AgentTrace, { stepsFromToolCalls, type TraceStep } from '../components/pl
 import CopilotChat from '../components/plan/CopilotChat'
 import PlanMap from '../components/plan/PlanMap'
 import TeamCard from '../components/plan/TeamCard'
+import VerifierPanel from '../components/plan/VerifierPanel'
 import TrustStrip from '../components/plan/TrustStrip'
 import { BandBadge, Card, DemoBadge, Status } from '../components/ui'
 import { describeTool, type PlanRecord, type PlanState } from '../copilot'
@@ -131,21 +132,11 @@ export default function PlanPage() {
                 <button onClick={() => generate(true)} disabled={running} className="ml-2 text-accent underline">Reset to defaults and regenerate</button>
               )}
             </p>
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap items-start gap-2 text-xs">
+              <VerifierPanel plan={plan} />
               <span className="rounded-full border border-line px-2.5 py-1 text-ink-2">
-                Island-wide: {plan.outlook.current_cases} cases in {weekLabel(plan.outlook.case_week)}, forecast {plan.outlook.forecast_cases} for {weekLabel(plan.outlook.forecast_week)} · {plan.outlook.outlook}
+                Island-wide, latest reported: {plan.outlook.current_cases} cases in {weekLabel(plan.outlook.case_week)}, forecast {plan.outlook.forecast_cases} for {weekLabel(plan.outlook.forecast_week)} · {plan.outlook.outlook}
               </span>
-              {plan.checks.unsupported.length === 0 ? (
-                <span className="rounded-full border border-line px-2.5 py-1 text-ink-2" title="Every number shown was checked against DengueRadar data; each area's reason only against that area's own data.">
-                  ✓ All {plan.checks.numbers_checked} numbers checked against our data
-                  {plan.checks.replaced?.length ? ` · ${plan.checks.replaced.length} reason(s) replaced with facts` : ''}
-                  {plan.checks.removed_sentences?.length ? ` · ${plan.checks.removed_sentences.length} unverifiable sentence(s) removed` : ''}
-                </span>
-              ) : (
-                <span className="rounded-full border border-line bg-accent-soft px-2.5 py-1 text-ink">
-                  ⚠ {plan.checks.unsupported.length} number(s) not found in our data: {plan.checks.unsupported.join(', ')}. Check before use.
-                </span>
-              )}
               <DemoBadge>Premises are demo data</DemoBadge>
             </div>
           </div>
@@ -180,25 +171,27 @@ export default function PlanPage() {
               <p className="mt-2 text-xs text-ink-2">Shaded: planned subzones by team. Dots and lines: visiting order (nearest neighbour), solid and dashed lines alternate by day.</p>
             </Card>
             <Card title="Recent context">
-              {plan.context.length ? (
+              {plan.context.length > 0 && (
                 <ul className="space-y-2 text-sm">
                   {plan.context.map((c) => (
                     <li key={c.id}>
                       <a href={c.url} target="_blank" rel="noreferrer" className="font-medium text-accent underline">[{c.id}] {c.title}</a>
-                      {c.published && <span className="text-xs text-ink-3"> · {dateLabel(c.published)}</span>}
-                      <p className="text-xs text-ink-2">{c.note}</p>
+                      <span className="text-xs text-ink-3"> · {c.published ? dateLabel(c.published) : 'no date given'}</span>
+                      {c.note && <p className="text-xs text-ink-2">{c.note}</p>}
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className="text-sm text-ink-2">The agent searched recent news (via Tavily) but found nothing Singapore-specific worth citing this week.</p>
+              )}
+              {plan.context.length === 0 && <p className="text-sm text-ink-2">No recent items from these searches changed this week’s plan.</p>}
+              {(plan.context_queries?.length ?? 0) > 0 && (
+                <div className="mt-2 text-xs text-ink-3">
+                  <p>Searched via Tavily (official and mainstream Singapore sources):</p>
+                  <ul className="mt-0.5 list-disc pl-4">{plan.context_queries!.map((q) => <li key={q.query}>{q.label}: {q.results} result{q.results === 1 ? '' : 's'}</li>)}</ul>
+                </div>
               )}
             </Card>
             <Card title="How the agent built this plan">
               <AgentTrace steps={[...stepsFromToolCalls(plan.agent.tool_calls), { kind: 'status', text: `Decided areas and teams; code checked capacity, ordered visits and verified ${plan.checks.numbers_checked} numbers` }]} running={false} />
-              {plan.checks.dropped.length > 0 && (
-                <p className="mt-2 text-xs text-ink-2">Removed by checks: {plan.checks.dropped.map((d) => `${d.subzone_id.replace(/-/g, ' ')} (${d.why})`).join('; ')}.</p>
-              )}
               <p className="mt-2 text-xs text-ink-3">{plan.agent.tokens.toLocaleString('en-SG')} tokens on Nebius Token Factory.</p>
             </Card>
           </div>

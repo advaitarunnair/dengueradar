@@ -41,6 +41,14 @@ export const TOOLS: ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'search_news',
+      description: 'Search official and mainstream Singapore sources for dengue, serotype or weather news, when the officer asks. Items may have no date: never call those recent.',
+      parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'search_recent_context',
       description: 'Search recent news and official sources for Singapore dengue clusters, outbreaks or weather alerts. Returns sources with ids (S1, S2...) to cite.',
       parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
@@ -99,6 +107,7 @@ export class ToolRunner {
           where p.subzone_id = ${a.subzone_id} and i.is_demo group by 1 order by 1 desc limit 8`) as Record<string, unknown>[]
         return { subzone_id: a.subzone_id, subzone: a.subzone, weekly_ranking: weeks, inspections_by_week_demo_data: insp }
       }
+      case 'search_news':
       case 'search_recent_context': {
         const found = await searchRecentContext(String(args.query ?? 'dengue clusters'))
         const out = found.map((s) => {

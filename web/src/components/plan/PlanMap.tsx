@@ -27,7 +27,7 @@ export default function PlanMap({ plan, scores, selectedId, onSelect }: { plan: 
     return lats.length ? [[Math.min(...lats) - 0.01, Math.min(...lons) - 0.01], [Math.max(...lats) + 0.01, Math.max(...lons) + 0.01]] : [[1.22, 103.62], [1.47, 104.03]]
   }, [plan])
   return (
-    <MapContainer bounds={bounds} className="h-[320px] w-full rounded-lg sm:h-[420px]" scrollWheelZoom={false}>
+    <MapContainer bounds={bounds} zoomSnap={0.25} className="h-[320px] w-full rounded-lg sm:h-[420px]" scrollWheelZoom={false}>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' opacity={0.7} />
       <GeoJSON
         key={plan.generated_at + (selectedId ?? '')}
