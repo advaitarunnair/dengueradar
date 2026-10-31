@@ -16,10 +16,5 @@
       "path": "/api/cron/weekly-plan",
       "schedule": "30 22 * * *"
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "hackathon-fixes": false
-    }
-  }
+  ]
 }
