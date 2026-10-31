@@ -31,6 +31,8 @@ test('unknown or missing keys fall back to sensible facts; an override always le
   assert.ok(renderReason(area('a'), ['made_up'], '', '').reason.includes('mm of rain'))
   const r = renderReason(area('a', { cluster_override: true, max_cluster_cases_near: 100 }), ['seniors_children'], '', '')
   assert.ok(r.reason.startsWith('100-case cluster within 1 km'))
+  const single = renderReason(area('a', { cluster_override: true, max_cluster_cases_near: 100, clusters_within_1km: 1 }), ['cluster_within_1km', 'seniors_children'], '', '')
+  assert.equal(single.reason, '100-case cluster within 1 km; 18,980 seniors and children.', 'no repeated cluster line')
 })
 
 test('areas fit in priority order, and an area that does not fit is partly covered rather than cut', () => {

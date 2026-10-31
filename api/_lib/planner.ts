@@ -4,6 +4,7 @@
  * capacity, orders visits (nearest neighbour) and checks that every number came from the data.
  */
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import { NumberLedger } from './checks.ts'
 import { findArea, load, rankedAreas, type Area } from './data.ts'
 import { sql } from './db.ts'
 import { currentWeek, sgToday } from './epi.ts'
@@ -102,10 +103,10 @@ ${table}
 - Take areas in priority order unless a constraint or your research gives a clear reason to skip one; stop once running_total is between ${low} and ${capacity} (total capacity ${capacity}).
 - First give each team a home: one region, or two neighbouring regions (WEST, CENTRAL, NORTH, NORTH-EAST, EAST), based on where the chosen areas are. Then assign each chosen area to a team whose home includes the area's region. Teams: ${teams.join(', ')}. Each team takes at most ${teamCapacity} premises and every team must get areas. If an area does not fit its region's team, skip it and take the next candidate rather than sending a team across the island.
 - factors: for each area, 2 to 4 keys saying why it is in the plan, from: ${FACTOR_KEYS.join(', ')}. The app writes the numbers from these keys, so choose what matters most for that area.
-- note: max 15 words, your own judgement on this area. NO digits or numbers at all.
+- note: max 15 words, your own judgement on this area. NO digits or numbers at all. Do not claim anything over time ("consistently", "recently", "returned") or compare with other areas ("largest in the West"): you only have this week's facts.
 - focus: max 12 words, what to check on site. NO digits or numbers.
 - summary: 1 to 2 sentences on this week's approach. NO digits or numbers, and do not name teams or regions: the app adds the figures and team labels.
-- context: cite only items from the recent context list by id, each with a short note and no numbers; use [] if none matter. Some items have no date: never call those recent.
+- context: cite only items from the recent context list by id, each with a short note using only what that item says; use [] if none matter. Some items have no date: never call those recent.
 
 Reply with ONLY this JSON object:
 {"summary": "", "team_regions": {"<team name>": ["REGION"]}, "areas": [{"subzone_id": "", "factors": [""], "note": "", "focus": "", "team": ""}], "context": [{"source_id": "S1", "note": ""}]}`
@@ -283,8 +284,11 @@ export async function generatePlan(opts: {
   const context = (parsed.context ?? []).flatMap((x) => {
     const s = gathered.sources.find((src) => src.id === x.source_id)
     if (!s) return []
+    // A note may quote numbers from its own source (e.g. "DENV-3"), but nothing else.
     const note = String(x.note ?? '')
-    if (/\d/.test(note)) { corrections.push({ where: `note on ${s.id}`, removed: note }); return [{ id: s.id, title: s.title, url: s.url, published: s.published, note: '' }] }
+    const own = new NumberLedger()
+    own.add(`${s.title} ${s.snippet}`)
+    if (own.unsupported(note.replace(/DENV-\d/gi, '')).length) { corrections.push({ where: `note on ${s.id}`, removed: note }); return [{ id: s.id, title: s.title, url: s.url, published: s.published, note: '' }] }
     return [{ id: s.id, title: s.title, url: s.url, published: s.published, note }]
   })
 

@@ -39,7 +39,9 @@ export interface RenderedReason { reason: string; focus: string; factors: Factor
 export function renderReason(a: Area, factors: unknown, note: unknown, focus: unknown): RenderedReason {
   const asked = Array.isArray(factors) ? factors.filter((f): f is FactorKey => (FACTOR_KEYS as readonly string[]).includes(f)) : []
   const keys: FactorKey[] = [...new Set<FactorKey>([...(a.cluster_override ? ['large_cluster' as const] : []), ...(asked.length ? asked : ['cluster_within_1km', 'rainfall_2_8wk', 'seniors_children'] as const)])]
-  const parts = keys.map((k) => factorText(a, k)).filter((x): x is string => Boolean(x))
+  // With a single cluster nearby, the override line already says it; don't repeat it.
+  const shown = a.cluster_override && a.clusters_within_1km === 1 ? keys.filter((k) => k !== 'cluster_within_1km') : keys
+  const parts = shown.map((k) => factorText(a, k)).filter((x): x is string => Boolean(x))
   const facts = parts.join('; ')
   const corrections: RenderedReason['corrections'] = []
   const clean = (field: string, v: unknown) => {
