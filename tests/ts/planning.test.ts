@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Area } from '../../api/_lib/data.ts'
-import { allocateTeams, MAX_DETOUR_KM, renderReason } from '../../api/_lib/planrender.ts'
+import { allocateTeams, hasFigure, MAX_DETOUR_KM, renderReason } from '../../api/_lib/planrender.ts'
 import type { Stop } from '../../api/_lib/routing.ts'
 
 const area = (id: string, extra: Partial<Area> = {}): Area => ({
@@ -66,4 +66,12 @@ test('capacity is never exceeded and teams stay local', () => {
 test('the model’s team is kept when it fits and matches the team’s home', () => {
   const { placements } = allocateTeams([{ area: area('a'), team: 'T2', stops: stops('a', 3) }], ['T1', 'T2'], 10, { T1: ['WEST'], T2: ['WEST'] })
   assert.equal(placements[0].team, 'T2')
+})
+
+test('digits in a place name are not figures', () => {
+  const a = area('a', { subzone: 'LORONG 8 TOA PAYOH', planning_area: 'TOA PAYOH' })
+  assert.equal(hasFigure('Inspect Lorong 8 blocks', a), false)
+  assert.equal(hasFigure('Check Lorong 8 Toa Payoh drains', a), false)
+  assert.equal(hasFigure('Has 20 cases nearby', a), true)
+  assert.equal(renderReason(a, ['seniors_children'], 'Busy lanes in Lorong 8', 'Check Lorong 8 drains').corrections.length, 0)
 })

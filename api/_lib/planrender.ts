@@ -28,7 +28,14 @@ function factorText(a: Area, key: FactorKey): string | null {
   }
 }
 
-const hasDigit = (s: string) => /\d/.test(s)
+/** Digits in the area's own name ("Lorong 8 Toa Payoh") are not figures. */
+export const hasFigure = (s: string, a?: Pick<Area, 'subzone' | 'planning_area'>) => {
+  let t = s
+  if (a) for (const name of [a.subzone, a.planning_area]) t = t.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'), 'gi'), '')
+  // A part of a name used alone, e.g. "Lorong 8 blocks".
+  t = t.replace(/\b(lorong|blk|block|sector|street|st|ave|avenue)\s+\d+\w?\b/gi, '')
+  return /\d/.test(t)
+}
 
 export interface RenderedReason { reason: string; focus: string; factors: FactorKey[]; corrections: { field: string; removed: string }[] }
 
@@ -46,7 +53,7 @@ export function renderReason(a: Area, factors: unknown, note: unknown, focus: un
   const corrections: RenderedReason['corrections'] = []
   const clean = (field: string, v: unknown) => {
     const s = typeof v === 'string' ? v.trim() : ''
-    if (s && hasDigit(s)) { corrections.push({ field, removed: s }); return '' }
+    if (s && hasFigure(s, a)) { corrections.push({ field, removed: s }); return '' }
     return s
   }
   const n = clean('note', note)

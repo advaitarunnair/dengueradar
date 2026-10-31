@@ -10,7 +10,7 @@ import { sql } from './db.ts'
 import { currentWeek, sgToday } from './epi.ts'
 import { startAgentRun } from './guard.ts'
 import { complete, MODELS, parseJson } from './llm.ts'
-import { allocateTeams, FACTOR_KEYS, regionLabel, renderReason, weekName } from './planrender.ts'
+import { allocateTeams, FACTOR_KEYS, hasFigure, regionLabel, renderReason, weekName } from './planrender.ts'
 import { nearestNeighbourOrder, splitIntoDays, type Stop } from './routing.ts'
 import { gatherContext } from './tavily.ts'
 import { TOOLS, ToolRunner } from './tools.ts'
@@ -109,7 +109,7 @@ ${table}
 - context: cite only items from the recent context list by id, each with a short note using only what that item says; use [] if none matter. Some items have no date: never call those recent.
 
 Reply with ONLY this JSON object:
-{"summary": "", "team_regions": {"<team name>": ["REGION"]}, "areas": [{"subzone_id": "", "factors": [""], "note": "", "focus": "", "team": ""}], "context": [{"source_id": "S1", "note": ""}]}`
+{"summary": "", "team_regions": {"<team name>": ["REGION"]}, "areas": [{"subzone_id": "", "factors": ["large_cluster", "seniors_children"], "note": "Largest cluster on the island sits at its edge, so go first", "focus": "Blocks beside the cluster, then shared drains", "team": ""}], "context": [{"source_id": "S1", "note": ""}]}`
 }
 
 /** Premises in each area, those with the most past breeding first (they stay in if an area is only partly covered). */
@@ -241,6 +241,30 @@ export async function generatePlan(opts: {
     chosen.push({ ...a, subzone_id: area.subzone_id })
   }
 
+  // One repair pass: text the model wrote with figures is rewritten without them, keeping the qualitative point.
+  // The originals go in the verifier's log; anything that still has a figure is then removed by renderReason.
+  const earlyCorrections: { where: string; removed: string }[] = []
+  const needsNote = chosen.filter((a) => a.note && hasFigure(String(a.note), findArea(a.subzone_id)!))
+  const needsFocus = chosen.filter((a) => a.focus && hasFigure(String(a.focus), findArea(a.subzone_id)!))
+  const summaryHasFigures = /\d/.test(String(parsed.summary ?? ''))
+  if (needsNote.length || needsFocus.length || summaryHasFigures) {
+    opts.onEvent?.({ type: 'status', text: 'Rewriting text that contained numbers (Nemotron Super)' })
+    try {
+      const fix = await complete({
+        model: 'SUPER', endpoint: 'plan-rewrite', session: opts.session, maxTokens: 1500, json: true, temperature: 0,
+        messages: [{ role: 'system', content: 'Rewrite each text so it contains no digits or figures, keeping only its qualitative point in at most 15 words (the summary: at most 2 sentences). Do not name teams or regions in the summary. If nothing qualitative remains, return an empty string. Keep the same keys. Reply with ONLY JSON.' },
+                   { role: 'user', content: JSON.stringify({ notes: Object.fromEntries(needsNote.map((a) => [a.subzone_id, a.note])), focus: Object.fromEntries(needsFocus.map((a) => [a.subzone_id, a.focus])), summary: summaryHasFigures ? parsed.summary : '' }) }],
+      })
+      tokens += fix.usage.prompt + fix.usage.completion
+      const out = parseJson<{ notes?: Record<string, string>; focus?: Record<string, string>; summary?: string }>(fix.text)
+      for (const a of needsNote) { earlyCorrections.push({ where: `${findArea(a.subzone_id)!.subzone} note rewritten; original`, removed: String(a.note) }); a.note = out.notes?.[a.subzone_id] ?? '' }
+      for (const a of needsFocus) { earlyCorrections.push({ where: `${findArea(a.subzone_id)!.subzone} focus rewritten; original`, removed: String(a.focus) }); a.focus = out.focus?.[a.subzone_id] ?? '' }
+      if (summaryHasFigures) { earlyCorrections.push({ where: 'Summary rewritten; original', removed: String(parsed.summary) }); parsed.summary = out.summary ?? '' }
+    } catch (e) {
+      console.error(e) // the verifier below still removes anything with a figure
+    }
+  }
+
   // Large active clusters must be covered: any override area the model skipped is added.
   for (const area of rankedAreas()) {
     if (area.cluster_override && !excluded.has(area.subzone_id) && !chosen.some((x) => x.subzone_id === area.subzone_id)) chosen.push({ subzone_id: area.subzone_id })
@@ -255,7 +279,7 @@ export async function generatePlan(opts: {
   )
   dropped.push(...allocation.dropped)
 
-  const corrections: { where: string; removed: string }[] = []
+  const corrections: { where: string; removed: string }[] = [...earlyCorrections]
   const rendered: { subzone: string; factors: string[]; text: string }[] = []
   const areas: PlanArea[] = allocation.placements.map((pl, i) => {
     const d = findArea(pl.subzone_id)!
