@@ -120,3 +120,13 @@ export function allocateTeams(
 const REGION_NAMES: Record<string, string> = { WEST: 'West', CENTRAL: 'Central', NORTH: 'North', 'NORTH-EAST': 'North-East', EAST: 'East' }
 export const regionLabel = (regions: string[]) => regions.map((r) => REGION_NAMES[r] ?? r).join(' + ')
 export const weekName = (label: string) => `E-week ${Number(label.split('-W')[1])}`
+
+/**
+ * We hold no serotype data, so only a cited search result can support a claim about it. The number checks
+ * cannot catch these because they usually contain no number.
+ */
+const SEARCH_ONLY_TOPIC = /serotype|denv|\bstrains?\b/i
+
+export function unsourcedClaim(text: string, citedSources: string): boolean {
+  return SEARCH_ONLY_TOPIC.test(text) && !SEARCH_ONLY_TOPIC.test(citedSources)
+}

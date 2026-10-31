@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Area } from '../../api/_lib/data.ts'
-import { allocateTeams, hasFigure, MAX_DETOUR_KM, renderReason } from '../../api/_lib/planrender.ts'
+import { allocateTeams, hasFigure, MAX_DETOUR_KM, renderReason, unsourcedClaim } from '../../api/_lib/planrender.ts'
 import type { Stop } from '../../api/_lib/routing.ts'
 
 const area = (id: string, extra: Partial<Area> = {}): Area => ({
@@ -74,4 +74,12 @@ test('digits in a place name are not figures', () => {
   assert.equal(hasFigure('Check Lorong 8 Toa Payoh drains', a), false)
   assert.equal(hasFigure('Has 20 cases nearby', a), true)
   assert.equal(renderReason(a, ['seniors_children'], 'Busy lanes in Lorong 8', 'Check Lorong 8 drains').corrections.length, 0)
+})
+
+test('a serotype claim needs a cited source that says so', () => {
+  const claim = 'Areas added given forecast stability and serotype shift concerns.'
+  assert.equal(unsourcedClaim(claim, ''), true)
+  assert.equal(unsourcedClaim(claim, 'Weather advisory for November'), true)
+  assert.equal(unsourcedClaim(claim, 'NEA reports a rise in DENV-3 cases'), false)
+  assert.equal(unsourcedClaim('Focus on the large active cluster.', ''), false)
 })

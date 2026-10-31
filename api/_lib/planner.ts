@@ -10,7 +10,7 @@ import { sql } from './db.ts'
 import { currentWeek, sgToday } from './epi.ts'
 import { startAgentRun } from './guard.ts'
 import { complete, MODELS, parseJson } from './llm.ts'
-import { allocateTeams, FACTOR_KEYS, hasFigure, regionLabel, renderReason, weekName } from './planrender.ts'
+import { allocateTeams, FACTOR_KEYS, hasFigure, regionLabel, renderReason, unsourcedClaim, weekName } from './planrender.ts'
 import { nearestNeighbourOrder, splitIntoDays, type Stop } from './routing.ts'
 import { gatherContext } from './tavily.ts'
 import { TOOLS, ToolRunner } from './tools.ts'
@@ -105,7 +105,7 @@ ${table}
 - factors: for each area, 2 to 4 keys saying why it is in the plan, from: ${FACTOR_KEYS.join(', ')}. The app writes the numbers from these keys, so choose what matters most for that area.
 - note: max 15 words, your own judgement on this area. NO digits or numbers at all. Do not claim anything over time ("consistently", "recently", "returned") or compare with other areas ("largest in the West"): you only have this week's facts.
 - focus: max 12 words, what to check on site. NO digits or numbers.
-- summary: 1 to 2 sentences on this week's approach. NO digits or numbers, and do not name teams or regions: the app adds the figures and team labels.
+- summary: 1 to 2 sentences on this week's approach. NO digits or numbers, and do not name teams or regions: the app adds the figures and team labels. Mention serotypes only if you cite a source that says so.
 - context: cite only items from the recent context list by id, each with a short note using only what that item says; use [] if none matter. Some items have no date: never call those recent.
 
 Reply with ONLY this JSON object:
@@ -265,6 +265,17 @@ export async function generatePlan(opts: {
     }
   }
 
+  // Serotype claims need a cited source; the note goes, or the sentence below, and the verifier log says so.
+  const citedSources = (parsed.context ?? []).map((x) => gathered.sources.find((s) => s.id === x.source_id)).map((s) => (s ? `${s.title} ${s.snippet}` : '')).join(' ')
+  for (const a of chosen) {
+    for (const field of ['note', 'focus'] as const) {
+      if (a[field] && unsourcedClaim(String(a[field]), citedSources)) {
+        earlyCorrections.push({ where: `${findArea(a.subzone_id)!.subzone} ${field}, no cited source`, removed: String(a[field]) })
+        a[field] = ''
+      }
+    }
+  }
+
   // Large active clusters must be covered: any override area the model skipped is added.
   for (const area of rankedAreas()) {
     if (area.cluster_override && !excluded.has(area.subzone_id) && !chosen.some((x) => x.subzone_id === area.subzone_id)) chosen.push({ subzone_id: area.subzone_id })
@@ -320,7 +331,8 @@ export async function generatePlan(opts: {
   // team labels around them are written by code, so the summary always matches the cards.
   const sentences = String(parsed.summary ?? '').split(/(?<=[.!?])\s+/).filter(Boolean)
   const removedSentences = sentences.filter((x) => /\d/.test(x))
-  const judgement = sentences.filter((x) => !/\d/.test(x)).join(' ')
+  for (const x of sentences) if (!/\d/.test(x) && unsourcedClaim(x, citedSources)) corrections.push({ where: 'Summary sentence, no cited source', removed: x })
+  const judgement = sentences.filter((x) => !/\d/.test(x) && !unsourcedClaim(x, citedSources)).join(' ')
   const figures = `Latest reported: ${meta.current_cases} cases in ${weekName(meta.case_week)}; forecast ${meta.forecast_cases} for ${weekName(meta.forecast_week)} (${meta.outlook}).`
   const teamLine = teams.filter((t) => t.premises).map((t) => `${t.name} covers ${regionLabel(t.regions)} (${t.premises} of ${t.capacity} premises)`).join('; ')
   const summary = [figures, judgement, teamLine ? `${teamLine}.` : ''].filter(Boolean).join(' ')
