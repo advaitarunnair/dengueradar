@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-01T08:32:50+08:00",
+ "generated_at": "2026-11-02T09:06:37+08:00",
  "epi_week": "2026-W44",
  "current_cases": 61,
  "case_week": "2026-W42",
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-10-31",
+  "window_end": "2026-11-01",
   "rain_stations_with_data": 88,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,12 +58,12 @@
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 40
+    "missing_days": 39
    },
    {
     "id": "S900",
     "name": "Seletar Meteorological Station",
-    "missing_days": 12
+    "missing_days": 11
    }
   ],
   "rain_stations_no_data": 0,
