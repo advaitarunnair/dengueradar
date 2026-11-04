@@ -151,5 +151,14 @@
   "x": 29412.7,
   "y": 45222.4,
   "subzone_id": "yishun-yishun-east"
+ },
+ {
+  "first_seen": "2026-11-04",
+  "epi_week": "2026-W44",
+  "locality": "Woodlands St 41 (Blk 413, 428)",
+  "cases": 2,
+  "x": 21368.3,
+  "y": 45512.4,
+  "subzone_id": "woodlands-woodgrove"
  }
 ]

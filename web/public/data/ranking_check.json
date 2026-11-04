@@ -1,5 +1,5 @@
 {
- "new_clusters": 6,
+ "new_clusters": 7,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 1,
  "weeks": [
@@ -53,6 +53,14 @@
    "cases": 2,
    "subzone_id": "yishun-yishun-east",
    "snapshot_week": "2026-W42",
+   "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-04",
+   "locality": "Woodlands St 41 (Blk 413, 428)",
+   "cases": 2,
+   "subzone_id": "woodlands-woodgrove",
+   "snapshot_week": "2026-W43",
    "band_week_before": "Low"
   }
  ],
