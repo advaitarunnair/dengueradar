@@ -160,5 +160,14 @@
   "x": 21368.3,
   "y": 45512.4,
   "subzone_id": "woodlands-woodgrove"
+ },
+ {
+  "first_seen": "2026-11-06",
+  "epi_week": "2026-W44",
+  "locality": "Lor Ah Soo (Blk 138, 139)",
+  "cases": 2,
+  "x": 33700.7,
+  "y": 37087.1,
+  "subzone_id": "hougang-lorong-ah-soo"
  }
 ]

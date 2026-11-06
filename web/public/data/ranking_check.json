@@ -1,7 +1,7 @@
 {
- "new_clusters": 7,
+ "new_clusters": 8,
  "in_high_prior_week": 0,
- "in_high_or_elevated_prior_week": 1,
+ "in_high_or_elevated_prior_week": 2,
  "weeks": [
   "2026-W40"
  ],
@@ -62,6 +62,14 @@
    "subzone_id": "woodlands-woodgrove",
    "snapshot_week": "2026-W43",
    "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-06",
+   "locality": "Lor Ah Soo (Blk 138, 139)",
+   "cases": 2,
+   "subzone_id": "hougang-lorong-ah-soo",
+   "snapshot_week": "2026-W43",
+   "band_week_before": "Elevated"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
