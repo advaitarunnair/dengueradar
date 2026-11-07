@@ -1,7 +1,7 @@
 {
- "new_clusters": 8,
+ "new_clusters": 9,
  "in_high_prior_week": 0,
- "in_high_or_elevated_prior_week": 2,
+ "in_high_or_elevated_prior_week": 3,
  "weeks": [
   "2026-W40"
  ],
@@ -68,6 +68,14 @@
    "locality": "Lor Ah Soo (Blk 138, 139)",
    "cases": 2,
    "subzone_id": "hougang-lorong-ah-soo",
+   "snapshot_week": "2026-W43",
+   "band_week_before": "Elevated"
+  },
+  {
+   "first_seen": "2026-11-07",
+   "locality": "West Coast Rd (Clementiwoods Condo, Varsity Pk Condo)",
+   "cases": 2,
+   "subzone_id": "clementi-clementi-woods",
    "snapshot_week": "2026-W43",
    "band_week_before": "Elevated"
   }

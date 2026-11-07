@@ -169,5 +169,14 @@
   "x": 33700.7,
   "y": 37087.1,
   "subzone_id": "hougang-lorong-ah-soo"
+ },
+ {
+  "first_seen": "2026-11-07",
+  "epi_week": "2026-W44",
+  "locality": "West Coast Rd (Clementiwoods Condo, Varsity Pk Condo)",
+  "cases": 2,
+  "x": 20754.8,
+  "y": 30891.2,
+  "subzone_id": "clementi-clementi-woods"
  }
 ]
