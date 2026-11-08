@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-11-07T09:24:33+08:00",
- "epi_week": "2026-W44",
+ "generated_at": "2026-11-08T08:57:38+08:00",
+ "epi_week": "2026-W45",
  "current_cases": 68,
  "case_week": "2026-W43",
  "forecast_cases": 56,
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-11-06",
+  "window_end": "2026-11-07",
   "rain_stations_with_data": 87,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,17 +58,17 @@
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 34
+    "missing_days": 33
    },
    {
     "id": "S224",
     "name": "Airport Boulevard",
-    "missing_days": 5
+    "missing_days": 6
    },
    {
     "id": "S900",
     "name": "Seletar Meteorological Station",
-    "missing_days": 6
+    "missing_days": 5
    }
   ],
   "rain_stations_no_data": 0,
@@ -101,7 +101,7 @@
   "eligible_subzones": 241,
   "total_subzones": 332
  },
- "previous_week": "2026-W43",
+ "previous_week": "2026-W44",
  "sources": [
   {
    "name": "NEA Dengue Clusters map feed",
