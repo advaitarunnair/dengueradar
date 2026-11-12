@@ -1,5 +1,5 @@
 {
- "new_clusters": 9,
+ "new_clusters": 10,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 3,
  "weeks": [
@@ -78,6 +78,14 @@
    "subzone_id": "clementi-clementi-woods",
    "snapshot_week": "2026-W43",
    "band_week_before": "Elevated"
+  },
+  {
+   "first_seen": "2026-11-12",
+   "locality": "Lor 37 Geylang (Palm Lodge) / Sims Ave",
+   "cases": 3,
+   "subzone_id": "geylang-aljunied",
+   "snapshot_week": "2026-W44",
+   "band_week_before": "Low"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

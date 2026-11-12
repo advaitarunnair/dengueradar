@@ -178,5 +178,14 @@
   "x": 20754.8,
   "y": 30891.2,
   "subzone_id": "clementi-clementi-woods"
+ },
+ {
+  "first_seen": "2026-11-12",
+  "epi_week": "2026-W45",
+  "locality": "Lor 37 Geylang (Palm Lodge) / Sims Ave",
+  "cases": 3,
+  "x": 34285.0,
+  "y": 33047.8,
+  "subzone_id": "geylang-aljunied"
  }
 ]

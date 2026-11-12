@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T09:34:28+08:00",
+ "generated_at": "2026-11-12T10:35:21+08:00",
  "epi_week": "2026-W45",
  "current_cases": 54,
  "case_week": "2026-W44",
@@ -31,13 +31,13 @@
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 10,
- "cluster_cases": 171,
+ "active_clusters": 6,
+ "cluster_cases": 44,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-11-10T23:12:22+08:00",
+  "updated_at": "2026-11-12T01:52:23+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,20 +50,25 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-11-10",
-  "rain_stations_with_data": 88,
+  "window_end": "2026-11-11",
+  "rain_stations_with_data": 87,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
   "rain_stations_skipped": [
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 30
+    "missing_days": 29
    },
    {
     "id": "S224",
     "name": "Airport Boulevard",
     "missing_days": 7
+   },
+   {
+    "id": "S307",
+    "name": "Pulau Tekong Reservoir",
+    "missing_days": 5
    }
   ],
   "rain_stations_no_data": 0,
