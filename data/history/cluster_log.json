@@ -187,5 +187,23 @@
   "x": 34285.0,
   "y": 33047.8,
   "subzone_id": "geylang-aljunied"
+ },
+ {
+  "first_seen": "2026-11-17",
+  "epi_week": "2026-W46",
+  "locality": "Tuas South Blvd",
+  "cases": 2,
+  "x": 3342.0,
+  "y": 26698.9,
+  "subzone_id": "tuas-tuas-view-extension"
+ },
+ {
+  "first_seen": "2026-11-17",
+  "epi_week": "2026-W46",
+  "locality": "Woodlands Ind Pk E9",
+  "cases": 2,
+  "x": 24092.7,
+  "y": 48165.2,
+  "subzone_id": "woodlands-senoko-west"
  }
 ]

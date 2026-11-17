@@ -1,5 +1,5 @@
 {
- "new_clusters": 10,
+ "new_clusters": 12,
  "in_high_prior_week": 0,
  "in_high_or_elevated_prior_week": 3,
  "weeks": [
@@ -86,6 +86,22 @@
    "subzone_id": "geylang-aljunied",
    "snapshot_week": "2026-W44",
    "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-17",
+   "locality": "Tuas South Blvd",
+   "cases": 2,
+   "subzone_id": "tuas-tuas-view-extension",
+   "snapshot_week": "2026-W45",
+   "band_week_before": null
+  },
+  {
+   "first_seen": "2026-11-17",
+   "locality": "Woodlands Ind Pk E9",
+   "cases": 2,
+   "subzone_id": "woodlands-senoko-west",
+   "snapshot_week": "2026-W45",
+   "band_week_before": null
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
