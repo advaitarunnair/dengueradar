@@ -1,7 +1,7 @@
 {
- "new_clusters": 12,
- "in_high_prior_week": 0,
- "in_high_or_elevated_prior_week": 3,
+ "new_clusters": 14,
+ "in_high_prior_week": 2,
+ "in_high_or_elevated_prior_week": 5,
  "weeks": [
   "2026-W40"
  ],
@@ -102,6 +102,22 @@
    "subzone_id": "woodlands-senoko-west",
    "snapshot_week": "2026-W45",
    "band_week_before": null
+  },
+  {
+   "first_seen": "2026-11-18",
+   "locality": "Ang Mo Kio Ave 5 (Blk 602, 604)",
+   "cases": 4,
+   "subzone_id": "ang-mo-kio-yio-chu-kang-west",
+   "snapshot_week": "2026-W45",
+   "band_week_before": "High"
+  },
+  {
+   "first_seen": "2026-11-18",
+   "locality": "Tagore Ln",
+   "cases": 2,
+   "subzone_id": "ang-mo-kio-tagore",
+   "snapshot_week": "2026-W45",
+   "band_week_before": "High"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

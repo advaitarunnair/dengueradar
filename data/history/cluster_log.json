@@ -205,5 +205,23 @@
   "x": 24092.7,
   "y": 48165.2,
   "subzone_id": "woodlands-senoko-west"
+ },
+ {
+  "first_seen": "2026-11-18",
+  "epi_week": "2026-W46",
+  "locality": "Ang Mo Kio Ave 5 (Blk 602, 604)",
+  "cases": 4,
+  "x": 28454.3,
+  "y": 40185.6,
+  "subzone_id": "ang-mo-kio-yio-chu-kang-west"
+ },
+ {
+  "first_seen": "2026-11-18",
+  "epi_week": "2026-W46",
+  "locality": "Tagore Ln",
+  "cases": 2,
+  "x": 27568.7,
+  "y": 40954.5,
+  "subzone_id": "ang-mo-kio-tagore"
  }
 ]
