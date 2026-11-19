@@ -1,25 +1,25 @@
 {
- "generated_at": "2026-11-18T11:12:48+08:00",
+ "generated_at": "2026-11-19T10:52:52+08:00",
  "epi_week": "2026-W46",
- "current_cases": 74,
+ "current_cases": 73,
  "case_week": "2026-W45",
- "forecast_cases": 62,
+ "forecast_cases": 61,
  "forecast_week": "2026-W49",
- "pct_change": -16.8,
+ "pct_change": -16.1,
  "outlook": "Falling",
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "74",
+   "value": "73",
    "direction": "down",
    "contribution": -0.5817,
-   "text": "Cases this week (74) are below typical levels, pulling the forecast down"
+   "text": "Cases this week (73) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Average cases over the last 4 weeks",
    "value": "64",
    "direction": "down",
-   "contribution": -0.2255,
+   "contribution": -0.2264,
    "text": "Average cases over the last 4 weeks (64) is below typical levels, pulling the forecast down"
   },
   {
@@ -31,13 +31,13 @@
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 12,
- "cluster_cases": 70,
+ "active_clusters": 14,
+ "cluster_cases": 69,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-11-17T23:24:50+08:00",
+  "updated_at": "2026-11-18T23:35:59+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-11-17",
+  "window_end": "2026-11-18",
   "rain_stations_with_data": 85,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,17 +58,17 @@
    {
     "id": "S107",
     "name": "East Coast Park",
-    "missing_days": 8
+    "missing_days": 9
    },
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 23
+    "missing_days": 22
    },
    {
     "id": "S224",
     "name": "Airport Boulevard",
-    "missing_days": 8
+    "missing_days": 9
    },
    {
     "id": "S307",

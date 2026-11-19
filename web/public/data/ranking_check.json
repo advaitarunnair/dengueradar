@@ -1,7 +1,7 @@
 {
- "new_clusters": 14,
- "in_high_prior_week": 2,
- "in_high_or_elevated_prior_week": 5,
+ "new_clusters": 16,
+ "in_high_prior_week": 3,
+ "in_high_or_elevated_prior_week": 6,
  "weeks": [
   "2026-W40"
  ],
@@ -118,6 +118,22 @@
    "subzone_id": "ang-mo-kio-tagore",
    "snapshot_week": "2026-W45",
    "band_week_before": "High"
+  },
+  {
+   "first_seen": "2026-11-19",
+   "locality": "Ang Mo Kio Ave 9 (Nuovo) / Yio Chu Kang Rd (Castle Green)",
+   "cases": 2,
+   "subzone_id": "ang-mo-kio-yio-chu-kang-west",
+   "snapshot_week": "2026-W45",
+   "band_week_before": "High"
+  },
+  {
+   "first_seen": "2026-11-19",
+   "locality": "Mt Faber Rd (The Pearl @ Mt Faber)",
+   "cases": 3,
+   "subzone_id": "bukit-merah-maritime-square",
+   "snapshot_week": "2026-W45",
+   "band_week_before": "Low"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
