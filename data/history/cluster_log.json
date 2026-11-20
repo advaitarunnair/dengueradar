@@ -241,5 +241,14 @@
   "x": 27020.5,
   "y": 28139.8,
   "subzone_id": "bukit-merah-maritime-square"
+ },
+ {
+  "first_seen": "2026-11-20",
+  "epi_week": "2026-W46",
+  "locality": "Mayflower Ter, Way",
+  "cases": 3,
+  "x": 28786.1,
+  "y": 39311.2,
+  "subzone_id": "ang-mo-kio-kebun-bahru"
  }
 ]
