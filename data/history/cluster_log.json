@@ -250,5 +250,32 @@
   "x": 28786.1,
   "y": 39311.2,
   "subzone_id": "ang-mo-kio-kebun-bahru"
+ },
+ {
+  "first_seen": "2026-11-24",
+  "epi_week": "2026-W47",
+  "locality": "Bt Panjang Ring Rd (Blk 238, 240)",
+  "cases": 2,
+  "x": 21037.2,
+  "y": 40203.2,
+  "subzone_id": "bukit-panjang-bangkit"
+ },
+ {
+  "first_seen": "2026-11-24",
+  "epi_week": "2026-W47",
+  "locality": "Senoko Dr",
+  "cases": 2,
+  "x": 25260.5,
+  "y": 49825.2,
+  "subzone_id": "sembawang-senoko-north"
+ },
+ {
+  "first_seen": "2026-11-24",
+  "epi_week": "2026-W47",
+  "locality": "Senoko Dr near Senoko Loop",
+  "cases": 2,
+  "x": 24335.0,
+  "y": 49023.0,
+  "subzone_id": "sembawang-senoko-north"
  }
 ]

@@ -1,56 +1,56 @@
 {
- "generated_at": "2026-11-23T10:03:46+08:00",
+ "generated_at": "2026-11-24T13:40:10+08:00",
  "epi_week": "2026-W47",
- "current_cases": 73,
- "case_week": "2026-W45",
- "forecast_cases": 61,
- "forecast_week": "2026-W49",
- "pct_change": -16.1,
+ "current_cases": 98,
+ "case_week": "2026-W46",
+ "forecast_cases": 76,
+ "forecast_week": "2026-W50",
+ "pct_change": -22.5,
  "outlook": "Falling",
  "drivers": [
   {
    "label": "Cases this week",
-   "value": "73",
+   "value": "98",
    "direction": "down",
-   "contribution": -0.5817,
-   "text": "Cases this week (73) are below typical levels, pulling the forecast down"
-  },
-  {
-   "label": "Average cases over the last 4 weeks",
-   "value": "64",
-   "direction": "down",
-   "contribution": -0.2264,
-   "text": "Average cases over the last 4 weeks (64) is below typical levels, pulling the forecast down"
+   "contribution": -0.53,
+   "text": "Cases this week (98) are below typical levels, pulling the forecast down"
   },
   {
    "label": "Cases 1 week ago",
-   "value": "54",
+   "value": "73",
    "direction": "down",
-   "contribution": -0.1658,
-   "text": "Cases 1 week ago (54) are below typical levels, pulling the forecast down"
+   "contribution": -0.1562,
+   "text": "Cases 1 week ago (73) are below typical levels, pulling the forecast down"
+  },
+  {
+   "label": "Average cases over the last 4 weeks",
+   "value": "72",
+   "direction": "down",
+   "contribution": -0.1478,
+   "text": "Average cases over the last 4 weeks (72) is below typical levels, pulling the forecast down"
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 13,
- "cluster_cases": 74,
+ "active_clusters": 17,
+ "cluster_cases": 83,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-11-20T23:46:19+08:00",
+  "updated_at": "2026-11-24T01:00:20+08:00",
   "fallback_used": false,
   "note": null
  },
  "population_reference_year": 2025,
  "case_data": {
-  "last_week": "2026-W45",
+  "last_week": "2026-W46",
   "bulletin_last_week": "2022-W52",
   "recent_source": "nea_page",
   "nea_fetch_ok": true,
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-11-22",
+  "window_end": "2026-11-23",
   "rain_stations_with_data": 85,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,17 +58,17 @@
    {
     "id": "S107",
     "name": "East Coast Park",
-    "missing_days": 13
+    "missing_days": 14
    },
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 18
+    "missing_days": 17
    },
    {
     "id": "S224",
     "name": "Airport Boulevard",
-    "missing_days": 13
+    "missing_days": 14
    },
    {
     "id": "S307",

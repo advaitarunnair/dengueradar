@@ -1,5 +1,5 @@
 {
- "new_clusters": 17,
+ "new_clusters": 20,
  "in_high_prior_week": 4,
  "in_high_or_elevated_prior_week": 7,
  "weeks": [
@@ -142,6 +142,30 @@
    "subzone_id": "ang-mo-kio-kebun-bahru",
    "snapshot_week": "2026-W45",
    "band_week_before": "High"
+  },
+  {
+   "first_seen": "2026-11-24",
+   "locality": "Bt Panjang Ring Rd (Blk 238, 240)",
+   "cases": 2,
+   "subzone_id": "bukit-panjang-bangkit",
+   "snapshot_week": "2026-W46",
+   "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-24",
+   "locality": "Senoko Dr",
+   "cases": 2,
+   "subzone_id": "sembawang-senoko-north",
+   "snapshot_week": "2026-W46",
+   "band_week_before": null
+  },
+  {
+   "first_seen": "2026-11-24",
+   "locality": "Senoko Dr near Senoko Loop",
+   "cases": 2,
+   "subzone_id": "sembawang-senoko-north",
+   "snapshot_week": "2026-W46",
+   "band_week_before": null
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."
