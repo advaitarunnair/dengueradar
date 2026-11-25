@@ -1,5 +1,5 @@
 {
- "new_clusters": 20,
+ "new_clusters": 23,
  "in_high_prior_week": 4,
  "in_high_or_elevated_prior_week": 7,
  "weeks": [
@@ -166,6 +166,30 @@
    "subzone_id": "sembawang-senoko-north",
    "snapshot_week": "2026-W46",
    "band_week_before": null
+  },
+  {
+   "first_seen": "2026-11-25",
+   "locality": "Seletar North Lk",
+   "cases": 2,
+   "subzone_id": "seletar-pulau-punggol-timor",
+   "snapshot_week": "2026-W46",
+   "band_week_before": null
+  },
+  {
+   "first_seen": "2026-11-25",
+   "locality": "St. Georges Rd (Blk 20) / St. Michael's Rd (One St Michael's)",
+   "cases": 2,
+   "subzone_id": "kallang-bendemeer",
+   "snapshot_week": "2026-W46",
+   "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-25",
+   "locality": "Bt Batok East Ave 2 (Hillview Regency) / Hillview Ter (Laurel Tree)",
+   "cases": 3,
+   "subzone_id": "bukit-batok-guilin",
+   "snapshot_week": "2026-W46",
+   "band_week_before": "Low"
   }
  ],
  "note": "New = cluster centre more than 500 m from every earlier cluster. Band = the subzone's band in the last weekly snapshot before the cluster appeared."

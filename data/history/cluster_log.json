@@ -277,5 +277,32 @@
   "x": 24335.0,
   "y": 49023.0,
   "subzone_id": "sembawang-senoko-north"
+ },
+ {
+  "first_seen": "2026-11-25",
+  "epi_week": "2026-W47",
+  "locality": "Seletar North Lk",
+  "cases": 2,
+  "x": 35052.5,
+  "y": 44559.8,
+  "subzone_id": "seletar-pulau-punggol-timor"
+ },
+ {
+  "first_seen": "2026-11-25",
+  "epi_week": "2026-W47",
+  "locality": "St. Georges Rd (Blk 20) / St. Michael's Rd (One St Michael's)",
+  "cases": 2,
+  "x": 31341.9,
+  "y": 34107.7,
+  "subzone_id": "kallang-bendemeer"
+ },
+ {
+  "first_seen": "2026-11-25",
+  "epi_week": "2026-W47",
+  "locality": "Bt Batok East Ave 2 (Hillview Regency) / Hillview Ter (Laurel Tree)",
+  "cases": 3,
+  "x": 19630.0,
+  "y": 37190.9,
+  "subzone_id": "bukit-batok-guilin"
  }
 ]
