@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T11:50:28+08:00",
+ "generated_at": "2026-11-27T11:51:31+08:00",
  "epi_week": "2026-W47",
  "current_cases": 98,
  "case_week": "2026-W46",
@@ -31,13 +31,13 @@
   }
  ],
  "outlook_threshold_pct": 15.0,
- "active_clusters": 19,
- "cluster_cases": 97,
+ "active_clusters": 18,
+ "cluster_cases": 101,
  "clusters": {
   "source": "nea_map",
   "source_name": "NEA Dengue Clusters map feed",
   "source_url": "https://www.nea.gov.sg/dengue-zika/dengue/dengue-clusters",
-  "updated_at": "2026-11-25T22:16:16+08:00",
+  "updated_at": "2026-11-27T00:21:06+08:00",
   "fallback_used": false,
   "note": null
  },
@@ -50,7 +50,7 @@
   "manual_topup_used": false
  },
  "weather": {
-  "window_end": "2026-11-25",
+  "window_end": "2026-11-26",
   "rain_stations_with_data": 85,
   "rain_max_missing_share": 0.1,
   "rain_window_days": 43,
@@ -58,12 +58,12 @@
    {
     "id": "S107",
     "name": "East Coast Park",
-    "missing_days": 16
+    "missing_days": 17
    },
    {
     "id": "S203",
     "name": "Pasir Panjang Road",
-    "missing_days": 15
+    "missing_days": 14
    },
    {
     "id": "S224",
