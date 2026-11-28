@@ -1,7 +1,7 @@
 {
- "new_clusters": 23,
- "in_high_prior_week": 4,
- "in_high_or_elevated_prior_week": 7,
+ "new_clusters": 25,
+ "in_high_prior_week": 5,
+ "in_high_or_elevated_prior_week": 8,
  "weeks": [
   "2026-W40"
  ],
@@ -188,6 +188,22 @@
    "locality": "Bt Batok East Ave 2 (Hillview Regency) / Hillview Ter (Laurel Tree)",
    "cases": 3,
    "subzone_id": "bukit-batok-guilin",
+   "snapshot_week": "2026-W46",
+   "band_week_before": "Low"
+  },
+  {
+   "first_seen": "2026-11-28",
+   "locality": "Huddington Ave / Kingswear Ave",
+   "cases": 2,
+   "subzone_id": "serangoon-serangoon-garden",
+   "snapshot_week": "2026-W46",
+   "band_week_before": "High"
+  },
+  {
+   "first_seen": "2026-11-28",
+   "locality": "Lengkok Bahru (Blk 59, 61)",
+   "cases": 2,
+   "subzone_id": "bukit-merah-alexandra-hill",
    "snapshot_week": "2026-W46",
    "band_week_before": "Low"
   }

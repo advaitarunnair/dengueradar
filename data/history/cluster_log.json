@@ -304,5 +304,23 @@
   "x": 19630.0,
   "y": 37190.9,
   "subzone_id": "bukit-batok-guilin"
+ },
+ {
+  "first_seen": "2026-11-28",
+  "epi_week": "2026-W47",
+  "locality": "Huddington Ave / Kingswear Ave",
+  "cases": 2,
+  "x": 31583.0,
+  "y": 38830.6,
+  "subzone_id": "serangoon-serangoon-garden"
+ },
+ {
+  "first_seen": "2026-11-28",
+  "epi_week": "2026-W47",
+  "locality": "Lengkok Bahru (Blk 59, 61)",
+  "cases": 2,
+  "x": 25838.4,
+  "y": 30211.5,
+  "subzone_id": "bukit-merah-alexandra-hill"
  }
 ]
